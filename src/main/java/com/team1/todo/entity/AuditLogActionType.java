@@ -6,15 +6,16 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "system_roles")
-public class SystemRole {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+@Table(name = "audit_log_action_types")
+public class AuditLogActionType {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
 
-    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<UserSystemRole> userRoles = new HashSet<>();
+    @OneToMany(mappedBy = "actionType", cascade = CascadeType.ALL)
+    private Set<AuditLog> logs = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -32,20 +33,20 @@ public class SystemRole {
         this.name = name;
     }
 
-    public Set<UserSystemRole> getUserRoles() {
-        return userRoles;
+    public Set<AuditLog> getLogs() {
+        return logs;
     }
 
-    public void setUserRoles(Set<UserSystemRole> userRoles) {
-        this.userRoles = userRoles;
+    public void setLogs(Set<AuditLog> logs) {
+        this.logs = logs;
     }
 
     @Override
     public String toString() {
-        return "SystemRole{" +
+        return "AuditLogActionType{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", userRoles=" + userRoles +
+                ", logs=" + logs +
                 '}';
     }
 }

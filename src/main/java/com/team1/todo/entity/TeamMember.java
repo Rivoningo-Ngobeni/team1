@@ -8,15 +8,13 @@ public class TeamMember {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "team_id")
+    @ManyToOne(fetch = FetchType.LAZY)
     private Team team;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_role_id")
     private TeamRole teamRole;
 
@@ -50,5 +48,15 @@ public class TeamMember {
 
     public void setTeam(Team team) {
         this.team = team;
+    }
+
+    @Override
+    public String toString() {
+        return "TeamMember{" +
+                "id=" + id +
+                ", team=" + team +
+                ", user=" + user +
+                ", teamRole=" + teamRole +
+                '}';
     }
 }

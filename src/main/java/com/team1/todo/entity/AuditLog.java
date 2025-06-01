@@ -2,30 +2,31 @@ package com.team1.todo.entity;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "audit_log")
 public class AuditLog {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    @Column(name = "action_type")
-    private String actionType;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "action_type")
+    private AuditLogActionType actionType;
 
-    @Column(name = "table_name")
     private String tableName;
 
-    @Column(name = "old_data", columnDefinition = "TEXT")
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(columnDefinition = "jsonb")
     private String oldData;
 
-    @Column(name = "new_data", columnDefinition = "TEXT")
+    @Column(columnDefinition = "jsonb")
     private String newData;
-
-    @Column(name = "client_ip")
-    private String clientIp;
 
     public Long getId() {
         return id;
@@ -33,14 +34,6 @@ public class AuditLog {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getActionType() {
-        return actionType;
-    }
-
-    public void setActionType(String actionType) {
-        this.actionType = actionType;
     }
 
     public User getUser() {
@@ -51,12 +44,36 @@ public class AuditLog {
         this.user = user;
     }
 
+    public AuditLogActionType getActionType() {
+        return actionType;
+    }
+
+    public void setActionType(AuditLogActionType actionType) {
+        this.actionType = actionType;
+    }
+
     public String getTableName() {
         return tableName;
     }
 
     public void setTableName(String tableName) {
         this.tableName = tableName;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public String getOldData() {
+        return oldData;
+    }
+
+    public void setOldData(String oldData) {
+        this.oldData = oldData;
     }
 
     public String getNewData() {
@@ -67,19 +84,16 @@ public class AuditLog {
         this.newData = newData;
     }
 
-    public String getClientIp() {
-        return clientIp;
-    }
-
-    public void setClientIp(String clientIp) {
-        this.clientIp = clientIp;
-    }
-
-    public String getOldData() {
-        return oldData;
-    }
-
-    public void setOldData(String oldData) {
-        this.oldData = oldData;
+    @Override
+    public String toString() {
+        return "AuditLog{" +
+                "id=" + id +
+                ", user=" + user +
+                ", actionType=" + actionType +
+                ", tableName='" + tableName + '\'' +
+                ", createdAt=" + createdAt +
+                ", oldData='" + oldData + '\'' +
+                ", newData='" + newData + '\'' +
+                '}';
     }
 }
