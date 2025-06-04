@@ -1,0 +1,154 @@
+package com.team1.todo.service;
+
+import com.team1.todo.entity.SystemRole;
+import com.team1.todo.entity.User;
+import com.team1.todo.entity.UserSystemRole;
+import com.team1.todo.dao.SystemRoleRepository;
+import com.team1.todo.dao.UserRepository;
+import com.team1.todo.dao.UserSystemRoleRepository;
+import com.team1.todo.security.JwtUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.security.SecureRandom;
+import java.util.Base64;
+import java.util.Optional;
+
+@Service
+public class AuthService {
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private SystemRoleRepository systemRoleRepository;
+
+    @Autowired
+    private UserSystemRoleRepository userSystemRoleRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private TotpService totpService;
+
+    private static final SecureRandom secureRandom = new SecureRandom();
+
+    @Transactional
+    public User registerUser(String username, String password, String roleName) {
+        if (userRepository.findByUsername(username).isPresent()) {
+            throw new RuntimeException("User already exists with username: " + username);
+        }
+
+        String salt = generateSalt();
+
+        String totpSecret = totpService.generateSecret();
+
+        // Create user with 2FA secret (required by schema)
+        User user = new User();
+        user.setUsername(username);
+        user.setPasswordSalt(salt);
+        user.setPasswordHash(passwordEncoder.encode(password + salt));
+        user.setTwoFaSecret(totpSecret);
+
+        User savedUser = userRepository.save(user);
+
+        // Assign system role
+        String roleToAssign = roleName != null ? roleName : "todo_member";
+        SystemRole systemRole = systemRoleRepository.findByName(roleToAssign)
+                .orElseThrow(() -> new RuntimeException("System role not found: " + roleToAssign));
+
+        UserSystemRole userSystemRole = new UserSystemRole(savedUser, systemRole);
+        userSystemRoleRepository.save(userSystemRole);
+
+        return savedUser;
+    }
+
+    public AuthenticationResponse authenticate(String username, String password, String totpCode) {
+        Optional<User> userOpt = userRepository.findByUsername(username);
+
+        if (userOpt.isEmpty()) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        User user = userOpt.get();
+
+        // Validate password
+        String hashedInputPassword = passwordEncoder.encode(password + user.getPasswordSalt());
+        if (!passwordEncoder.matches(password + user.getPasswordSalt(), user.getPasswordHash())) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        // Check if user has 2FA secret
+        if (user.getTwoFaSecret() == null || user.getTwoFaSecret().isEmpty()) {
+            throw new RuntimeException("2FA not set up for this user");
+        }
+
+        // Validate TOTP code if provided
+        if (totpCode == null || totpCode.isEmpty()) {
+            throw new RuntimeException("2FA code is required");
+        }
+
+        if (!totpService.verifyCode(user.getTwoFaSecret(), totpCode)) {
+            throw new RuntimeException("Invalid 2FA code");
+        }
+
+        String token = jwtUtil.generateToken(user);
+        return new AuthenticationResponse(token, true, true, user.getPrimaryRole());
+    }
+
+    public String setup2FA(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // User already has a secret from registration, return QR code URL
+        return totpService.generateQrCodeUrl(user.getTwoFaSecret(), username);
+    }
+
+    public boolean verify2FA(String username, String totpCode) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return totpService.verifyCode(user.getTwoFaSecret(), totpCode);
+    }
+
+    @Transactional
+    public void resetTwoFaSecret(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setTwoFaSecret(totpService.generateSecret());
+        userRepository.save(user);
+    }
+
+    private String generateSalt() {
+        byte[] salt = new byte[32]; // 256-bit salt
+        secureRandom.nextBytes(salt);
+        return Base64.getEncoder().encodeToString(salt);
+    }
+
+
+    public static class AuthenticationResponse {
+            private final String token;
+            private final boolean requiresTwoFa;
+            private boolean success;
+            private String role;
+
+            public AuthenticationResponse(String token, boolean requiresTwoFa, boolean success, String role) {
+                this.token = token;
+                this.requiresTwoFa = requiresTwoFa;
+                this.success = success;
+                this.role = role;
+            }
+
+            // Getters
+            public String getToken() { return token; }
+            public boolean isRequiresTwoFa() { return requiresTwoFa; }
+            public boolean isSuccess() { return success; }
+            public String getRole() { return role; }
+        }
+    }
