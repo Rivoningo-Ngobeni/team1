@@ -15,6 +15,13 @@ public class UserSystemRole {
     @ManyToOne(fetch = FetchType.LAZY)
     private SystemRole role;
 
+    public UserSystemRole() {}
+
+    public UserSystemRole(User user, SystemRole systemRole) {
+        this.user = user;
+        this.role = systemRole;
+    }
+
     public Long getId() {
         return id;
     }

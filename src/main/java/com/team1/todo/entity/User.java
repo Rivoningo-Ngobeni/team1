@@ -1,14 +1,20 @@
 package com.team1.todo.entity;
 
 import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -26,12 +32,31 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<TeamMember> teamMemberships = new HashSet<>();
 
+    public User() {}
+
+    public User(String username, String passwordHash, String passwordSalt) {
+        this.username = username;
+        this.passwordHash = passwordHash;
+        this.passwordSalt = passwordSalt;
+    }
+
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return systemRoles.stream()
+                .map(usr -> new SimpleGrantedAuthority("ROLE_" + usr.getRole().getName().toUpperCase()))
+                .collect(Collectors.toSet());
+    }
+
+    public String getPassword() {
+        return passwordHash;
     }
 
     public String getUsername() {
@@ -88,6 +113,19 @@ public class User {
 
     public void setTeamMemberships(Set<TeamMember> teamMemberships) {
         this.teamMemberships = teamMemberships;
+    }
+
+    // Helper methods
+    public boolean hasRole(String roleName) {
+        return systemRoles.stream()
+                .anyMatch(usr -> usr.getRole().getName().equalsIgnoreCase(roleName));
+    }
+
+    public String getPrimaryRole() {
+        return systemRoles.stream()
+                .findFirst()
+                .map(usr -> usr.getRole().getName())
+                .orElse("todo_member");
     }
 
     @Override

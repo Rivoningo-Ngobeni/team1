@@ -16,6 +16,13 @@ public class SystemRole {
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserSystemRole> userRoles = new HashSet<>();
 
+    public SystemRole() {}
+
+    public SystemRole(String name) {
+        this.name = name;
+    }
+
+
     public Long getId() {
         return id;
     }
