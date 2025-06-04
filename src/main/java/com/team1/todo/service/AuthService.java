@@ -55,17 +55,7 @@ public class AuthService {
         user.setPasswordHash(passwordEncoder.encode(password + salt));
         user.setTwoFaSecret(totpSecret);
 
-        User savedUser = userRepository.save(user);
-
-        // Assign system role
-        String roleToAssign = roleName != null ? roleName : "todo_member";
-        SystemRole systemRole = systemRoleRepository.findByName(roleToAssign)
-                .orElseThrow(() -> new RuntimeException("System role not found: " + roleToAssign));
-
-        UserSystemRole userSystemRole = new UserSystemRole(savedUser, systemRole);
-        userSystemRoleRepository.save(userSystemRole);
-
-        return savedUser;
+        return userRepository.save(user);
     }
 
     public AuthenticationResponse authenticate(String username, String password, String totpCode) {
