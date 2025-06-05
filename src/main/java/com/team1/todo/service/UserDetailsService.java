@@ -1,6 +1,6 @@
 package com.team1.todo.service;
 
-import com.team1.todo.dao.UserRepository;
+import com.team1.todo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
