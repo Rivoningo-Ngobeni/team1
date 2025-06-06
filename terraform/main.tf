@@ -20,25 +20,3 @@ resource "aws_budgets_budget" "monthly_budget" {
     }
   }
 }
-
-resource "aws_acm_certificate" "cert" {
-  domain_name = "garlic-phone.com"
-  validation_method = "DNS"
-}
-
-resource "tls_private_key" "team_one_key" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
-}
-
-resource "aws_key_pair" "team_one_key_pair" {
-  key_name   = "team-one-instance-key-pair"
-  public_key = tls_private_key.team_one_key.public_key_openssh
-}
-
-output "private_key_pem" {
-  value     = tls_private_key.team_one_key.private_key_pem
-  sensitive = true
-}
-
-

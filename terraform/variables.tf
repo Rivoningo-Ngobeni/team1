@@ -74,7 +74,7 @@ variable "budget_limit" {
 }
 
 variable "alert_thresholds" {
-  default = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+  default = [20, 30, 40, 50, 60, 70, 80, 90, 100]
 }
 
 variable "alert_emails" {
@@ -88,7 +88,7 @@ variable "alert_emails" {
   ]
 }
 
-# variable "acm_certificate_arn" {
-#   type        = string
-#   description = "The ARN of the ACM certificate"
-# }
+variable "acm_certificate_arn" {
+  type        = string
+  description = "The ARN of the ACM certificate"
+}
