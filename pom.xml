@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.team1</groupId>
 	<artifactId>todo</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1-app</version>
 	<name>todo</name>
 	<description>Todo App project for Spring Boot</description>
 	<url/>
