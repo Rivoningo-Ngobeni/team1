@@ -48,8 +48,7 @@ jobs:
             cd "$APP_DIR"
             
             echo "--- Installing Java 21 (Amazon Corretto) ---"
-            sudo amazon-linux-extras enable corretto21
-            sudo yum install -y java-21-amazon-corretto
+            sudo dnf install -y java-21-amazon-corretto
             
             echo "--- Writing environment variables to .env ---"
             cat <<EOF > "$APP_DIR/.env"
