@@ -6,7 +6,7 @@ resource "aws_instance" "team_one_instance" {
   vpc_security_group_ids      = [aws_security_group.instance_security_group.id]
   associate_public_ip_address = true
 
-  key_name = aws_key_pair.team_one_key_pair.key_name
+  key_name = var.instance_key_pair_name
 
   user_data = file("data/instance_init_data.sh")
 
