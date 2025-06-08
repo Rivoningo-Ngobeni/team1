@@ -6,8 +6,8 @@ yum update -y
 amazon-linux-extras enable corretto21
 yum install -y java-21-amazon-corretto
 
-APP_DIR="/home/ec2-user/team_one/target"
-JAR_NAME="todo-0.0.1-app.jar"
+APP_DIR="/home/ec2-user/team_one"
+JAR_NAME="target/todo-0.0.1-app.jar"
 
 
 mkdir -p "$APP_DIR"
@@ -25,7 +25,7 @@ After=network.target
 [Service]
 User=ec2-user
 WorkingDirectory=$APP_DIR
-ExecStart=/usr/bin/java -jar $APP_DIR/$JAR_NAME
+ExecStart=/bin/bash -c 'set -a && source $APP_DIR/.env && exec /usr/bin/java -jar $APP_DIR/$JAR_NAME'
 SuccessExitStatus=143
 Restart=on-failure
 RestartSec=10
