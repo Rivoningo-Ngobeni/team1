@@ -57,7 +57,7 @@ jobs:
             SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }}
             SPRING_APPLICATION_NAME=${{vars.APPLICATION_NAME}}
             SPRING_DATA_REST_BASE_PATH=${{vars.REST_BASE_PATH}}
-            API_BASEURL=${{vars.EC2_HOST}}/${{vars.REST_BASE_PATH}}
+            API_BASEURL=${{vars.EC2_HOST}}${{vars.REST_BASE_PATH}}
             EOF
             
             echo "--- Creating systemd service for $SERVICE_NAME ---"
