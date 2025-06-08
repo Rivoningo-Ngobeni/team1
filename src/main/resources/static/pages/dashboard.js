@@ -8,6 +8,7 @@ import StateManager from "../utils/state.js"
 class DashboardPage {
   static currentView = "list" // 'list' or 'kanban'
   static dragDropManager = null
+  statuses = null
 
   static async render() {
     const app = document.getElementById("app")
@@ -88,10 +89,6 @@ class DashboardPage {
                 </div>
                 <div class="flex items-center gap-2">
                     <app-select id="status-filter" aria-label="Filter by status">
-                        <option value="">All Status</option>
-                        <option value="open">Open</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="closed">Closed</option>
                     </app-select>
                     <app-input 
                         type="search" 
@@ -137,6 +134,9 @@ class DashboardPage {
     // Load teams for selector
     await this.loadTeams()
 
+    // Load statuses
+    this.statuses = await this.loadStatues()
+
     // Load initial data
     await this.loadStats()
     await this.loadTodos()
@@ -145,12 +145,34 @@ class DashboardPage {
     this.setupEventListeners()
   }
 
+  static async loadStatues(){
+    try {
+          const response = await ApiService.get("/todoStatuses")
+          console.log(response)
+            const statusFilter = document.getElementById("status-filter")
+            const statuses = response._embedded.todoStatuses
+
+            const options = [{ value: "", label: "All" }]
+            statuses.forEach((status) => {
+              options.push({
+                value: status.id.toString(),
+                label: SecurityUtils.sanitizeText(status.name),
+              })
+            })
+
+            statusFilter.setOptions(options)
+            return statuses
+        } catch (error) {
+        console.log(error)
+          ToastService.show("Failed to load statuses", "error")
+        }
+  }
+
   static async loadTeams() {
     try {
       const response = await ApiService.get("/teams")
-      if (response.success) {
         const teamSelector = document.getElementById("team-selector")
-        const teams = response.data
+        const teams = response._embedded.teams
 
         const options = [{ value: "", label: "All Teams" }]
         teams.forEach((team) => {
@@ -167,8 +189,8 @@ class DashboardPage {
         if (currentTeam) {
           teamSelector.value = currentTeam
         }
-      }
     } catch (error) {
+    console.log(error)
       ToastService.show("Failed to load teams", "error")
     }
   }
@@ -203,16 +225,13 @@ class DashboardPage {
         `
 
     try {
-      const response = await ApiService.get("/todos")
-      if (response.success) {
-        const todos = response.data
-        const stats = this.calculateStats(todos)
+      const response = await ApiService.get("/full-todos")
+        const stats = this.calculateStats(response)
 
         document.getElementById("total-tasks").textContent = stats.total
         document.getElementById("open-tasks").textContent = stats.open
         document.getElementById("progress-tasks").textContent = stats.inProgress
         document.getElementById("completed-tasks").textContent = stats.completed
-      }
     } catch (error) {
       ToastService.show("Failed to load statistics", "error")
     }
@@ -221,9 +240,9 @@ class DashboardPage {
   static calculateStats(todos) {
     return {
       total: todos.length,
-      open: todos.filter((t) => t.status_name === "open").length,
-      inProgress: todos.filter((t) => t.status_name === "in_progress").length,
-      completed: todos.filter((t) => t.status_name === "closed").length,
+      open: todos.filter((t) => t.status.name === "Open").length,
+      inProgress: todos.filter((t) => t.status.name === "In Progress").length,
+      completed: todos.filter((t) => t.status.name === "Closed").length,
     }
   }
 
@@ -232,11 +251,9 @@ class DashboardPage {
     container.innerHTML = '<div class="loading-message">Loading tasks...</div>'
 
     try {
-      const response = await ApiService.get("/todos")
-      if (response.success) {
-        this.allTodos = response.data
-        this.renderTodos(response.data)
-      }
+      const response = await ApiService.get("/full-todos")
+        this.allTodos = response
+        this.renderTodos(response)
     } catch (error) {
       container.innerHTML = '<div class="error-message">Failed to load tasks</div>'
       ToastService.show("Failed to load tasks", "error")
@@ -315,13 +332,13 @@ class DashboardPage {
     board.setAttribute("aria-label", "Kanban board for task management")
 
     const statuses = [
-      { key: "open", label: "Open", color: "var(--info-color)" },
-      { key: "in_progress", label: "In Progress", color: "var(--warning-color)" },
-      { key: "closed", label: "Completed", color: "var(--success-color)" },
+      { key: "Open", label: "Open", color: "var(--info-color)" },
+      { key: "In Progress", label: "In Progress", color: "var(--warning-color)" },
+      { key: "Completed", label: "Completed", color: "var(--success-color)" },
     ]
 
     statuses.forEach((status) => {
-      const statusTodos = todos.filter((todo) => todo.status_name === status.key)
+      const statusTodos = todos.filter((todo) => todo.status.name === status.label)
 
       const column = document.createElement("div")
       column.className = "kanban-column"
@@ -419,7 +436,11 @@ class DashboardPage {
     // Listen for status changes from drag and drop
     board.addEventListener("todo-status-change", async (e) => {
       const { todoId, fromStatus, toStatus } = e.detail
-      await this.updateTodoStatus(todoId, toStatus)
+      if(this.statuses){
+            const toStatusId = this.statuses.find((status) => status.name === toStatus)
+          toStatusId?.id && await this.updateTodoStatus(todoId, toStatusId)
+      }
+
     })
   }
 
@@ -520,7 +541,7 @@ class DashboardPage {
 
     if (selectedTeam) {
       filtered = filtered.filter((todo) => {
-        const result = todo.team_id && todo.team_id.toString() === selectedTeam;
+        const result = todo.team.id && todo.team.id.toString() === selectedTeam;
         return result;
       });
       console.log(`After team filter: ${filtered.length} todos`);
@@ -528,7 +549,7 @@ class DashboardPage {
 
     if (selectedStatus) {
       filtered = filtered.filter((todo) => {
-        const result = todo.status_name === selectedStatus;
+        const result = todo.status.name === selectedStatus;
         return result; 
       });
       console.log(`After status filter: ${filtered.length} todos`);
@@ -548,15 +569,13 @@ class DashboardPage {
 
   static async updateTodoStatus(todoId, newStatus) {
     try {
-      const response = await ApiService.put(`/todos/${todoId}`, {
-        status_name: newStatus,
+      const response = await ApiService.patch(`/todos/${todoId}`, {
+        status: 'api/todoStatuses/' + newStatus.id,
       })
-
-      if (response.success) {
         // Update local data
         const todoIndex = this.allTodos.findIndex((t) => t.id === todoId)
         if (todoIndex !== -1) {
-          this.allTodos[todoIndex].status_name = newStatus
+          this.allTodos[todoIndex].status.name = newStatus.name
         }
 
         ToastService.show("Task status updated", "success")
@@ -564,7 +583,6 @@ class DashboardPage {
 
         // Re-render current view
         this.renderTodos(this.allTodos)
-      }
     } catch (error) {
       ToastService.show("Failed to update task status", "error")
       // Revert the UI change
@@ -673,10 +691,6 @@ class DashboardPage {
         try {
           console.log(`Sending delete request for todo ${todoId}`);
           const response = await ApiService.delete(`/todos/${todoId}`);
-          
-          if (response.success) {
-            console.log("Delete successful");
-            
             // Always remove the modal first
             removeModal();
             
@@ -684,11 +698,6 @@ class DashboardPage {
             ToastService.show("Task deleted successfully", "success");
             await this.loadTodos();
             await this.loadStats();
-          } else {
-            console.log("Delete failed:", response);
-            ToastService.show("Failed to delete task: " + (response.message || "Unknown error"), "error");
-            removeModal();
-          }
         } catch (error) {
           console.error("Error deleting todo:", error);
           ToastService.show("Failed to delete task", "error");
@@ -723,13 +732,15 @@ class DashboardPage {
     if (!todo) return
 
     const statusMap = {
-      open: "in_progress",
-      in_progress: "closed",
-      closed: "open",
+      "Open": "In Progress",
+      "In Progress": "Completed",
+      "Completed": "Open",
     }
 
-    const newStatus = statusMap[todo.status_name]
-    await this.updateTodoStatus(todoId, newStatus)
+    if(this.statuses){
+        const toStatusId = this.statuses.find((status) => status.name ===  statusMap[todo.status.name])
+        toStatusId?.id && await this.updateTodoStatus(todoId, toStatusId)
+      }
   }
 }
 

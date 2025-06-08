@@ -2,6 +2,7 @@ import { ToastService } from "../components/app-toast.js"
 import ApiService from "../utils/api.js"
 import Router from "../utils/router.js"
 import SecurityUtils from "../utils/security.js"
+import PermissionService from "../utils/permissions.js"
 
 class TeamsPage {
   static teamsList = []
@@ -100,10 +101,10 @@ class TeamsPage {
         `
 
     try {
-      const response = await ApiService.get("/teams")
+      const response = await ApiService.get("/teaminfo/all")
+      const teams = response
 
-      if (response.success) {
-        this.teamsList = response.data
+        this.teamsList = teams
         if (this.teamsList.length === 0) {
           teamsContainer.innerHTML = `
                         <div class="col-span-full flex flex-col items-center justify-center p-8 text-center">
@@ -120,10 +121,8 @@ class TeamsPage {
         } else {
           this.renderTeams(this.teamsList)
         }
-      } else {
-        throw new Error(response.message || "Failed to load teams")
-      }
     } catch (error) {
+        console.log(error)
       teamsContainer.innerHTML = `
                 <div class="col-span-full text-center p-8">
                     <div class="error-message">Error loading teams. Please try again later.</div>
@@ -137,25 +136,26 @@ class TeamsPage {
     const teamsContainer = document.getElementById("teams-container")
     teamsContainer.innerHTML = ""
 
-    teams.forEach((team) => {
+    teams.forEach(async (team) => {
+       const isTeamLead = await PermissionService.isTeamLead(team.teamId)
       const teamCard = document.createElement("div")
       teamCard.className = "team-card"
       teamCard.setAttribute("role", "listitem")
       teamCard.innerHTML = `
                 <article class="bg-surface p-4 rounded shadow border-left">
-                    <h3 class="mb-2">${SecurityUtils.sanitizeText(team.name)}</h3>
+                    <h3 class="mb-2">${SecurityUtils.sanitizeText(team.teamName)}</h3>
                     <div class="flex items-center text-secondary mb-4">
-                        <span>Role: ${team.role_name === "team_lead" ? "Team Lead" : "Team Member"}</span>
+                        <span>Role: ${isTeamLead ? "Team Lead" : "Team Member"}</span>
                         <span class="mx-2">•</span>
-                        <span>${team.member_count} member${team.member_count !== 1 ? "s" : ""}</span>
+                        <span>${team.members.length} member${team.members.length !== 1 ? "s" : ""}</span>
                     </div>
                     <div class="team-actions flex gap-2 mt-4">
-                        <button type="button" class="btn btn-primary btn-sm view-team-btn" data-id="${team.id}">
+                        <button type="button" class="btn btn-primary btn-sm view-team-btn" data-id="${team.teamId}">
                             View Todos
                         </button>
                         ${
-                          team.role_name === "team_lead"
-                            ? `<button type="button" class="btn btn-secondary btn-sm manage-team-btn" data-id="${team.id}">
+                          isTeamLead
+                            ? `<button type="button" class="btn btn-secondary btn-sm manage-team-btn" data-id="${team.teamId}">
                                 Manage Team
                             </button>`
                             : ""
@@ -261,15 +261,9 @@ class TeamsPage {
       try {
         const response = await ApiService.post("/teams", { name: teamName })
 
-        if (response.success) {
           ToastService.show("Team created successfully", "success")
           document.body.removeChild(modal)
           this.loadTeams()
-        } else {
-          teamNameError.textContent = response.message || "Failed to create team"
-          createBtn.disabled = false
-          createBtn.textContent = "Create Team"
-        }
       } catch (error) {
         teamNameError.textContent = "An error occurred. Please try again."
         createBtn.disabled = false

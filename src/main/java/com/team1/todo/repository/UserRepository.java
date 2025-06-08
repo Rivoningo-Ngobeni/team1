@@ -1,4 +1,4 @@
-package com.team1.todo.dao;
+package com.team1.todo.repository;
 
 import com.team1.todo.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;

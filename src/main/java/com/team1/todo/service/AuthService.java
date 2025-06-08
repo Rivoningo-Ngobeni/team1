@@ -1,11 +1,9 @@
 package com.team1.todo.service;
 
-import com.team1.todo.entity.SystemRole;
 import com.team1.todo.entity.User;
-import com.team1.todo.entity.UserSystemRole;
-import com.team1.todo.dao.SystemRoleRepository;
-import com.team1.todo.dao.UserRepository;
-import com.team1.todo.dao.UserSystemRoleRepository;
+import com.team1.todo.repository.SystemRoleRepository;
+import com.team1.todo.repository.UserRepository;
+import com.team1.todo.repository.UserSystemRoleRepository;
 import com.team1.todo.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;

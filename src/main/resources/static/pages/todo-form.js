@@ -12,13 +12,8 @@ class TodoFormPage {
     // For edit mode, fetch the todo data
     if (isEdit) {
       try {
-        const response = await ApiService.get(`/todos/${todoId}`);
-        if (!response.success) {
-          ToastService.show("Failed to load task data", "error");
-          Router.navigate("/dashboard");
-          return;
-        }
-        todo = response.data;
+        const response = await ApiService.get(`/full-todos/${todoId}`);
+        todo = response;
       } catch (error) {
         console.error("Error fetching todo:", error);
         ToastService.show("Could not load task data", "error");
@@ -69,8 +64,8 @@ class TodoFormPage {
         <label for="todo-title" class="form-label">Title</label>
         <app-input 
           id="todo-title"
-          type="text" 
-          placeholder="Enter task title" 
+          type="text"
+          placeholder="Enter task title"
           required
           value="${isEdit ? SecurityUtils.sanitizeText(todo.title) : ""}"
           aria-describedby="title-error">
@@ -159,21 +154,22 @@ class TodoFormPage {
       submitBtn.setAttribute("loading", "");
       
       try {
-        const formData = this.collectFormData(form);
+        const todoData = this.collectFormData(form);
+        console.log(todoData)
+        todoData.team = 'api/teams/' + todoData.team
+        todoData.createdBy = 'api/users/1'
+        todoData.status = "/api/todoStatuses/1"
         let response;
         
         if (isEdit) {
-          response = await ApiService.put(`/todos/${todoId}`, formData);
+          response = await ApiService.put(`/todos/${todoId}`, todoData);
         } else {
-          response = await ApiService.post("/todos", formData);
+            console.log(todoData)
+          response = await ApiService.post("/todos", todoData);
         }
-        
-        if (response.success) {
-          ToastService.show(`Task ${isEdit ? "updated" : "created"} successfully`, "success");
-          Router.navigate("/dashboard");
-        } else {
-          ToastService.show(response.message || `Failed to ${isEdit ? "update" : "create"} task`, "error");
-        }
+
+        ToastService.show(`Task ${isEdit ? "updated" : "created"} successfully`, "success");
+        Router.navigate("/dashboard");
       } catch (error) {
         console.error("Form submission error:", error);
         ToastService.show(`An error occurred while ${isEdit ? "updating" : "creating"} the task`, "error");
@@ -195,9 +191,7 @@ class TodoFormPage {
     try {
       console.log("Loading team options for todo form");
       const response = await ApiService.get("/teams");
-      
-      if (response.success && response.data) {
-        console.log(`Received ${response.data.length} teams from API`);
+      const teams = response._embedded.teams
         
         const teamSelect = form.querySelector("#todo-team");
         if (!teamSelect) {
@@ -206,7 +200,7 @@ class TodoFormPage {
         }
         
         // Format options for the select
-        const options = response.data.map((team) => ({
+        const options = teams.map((team) => ({
           value: team.id.toString(),
           label: SecurityUtils.sanitizeText(team.name),
         }));
@@ -242,10 +236,6 @@ class TodoFormPage {
         } else {
           console.error("setOptions method not available on team select");
         }
-      } else {
-        console.error("Failed to load teams:", response);
-        ToastService.show("Failed to load teams", "error");
-      }
     } catch (error) {
       console.error("Error loading teams:", error);
       ToastService.show("Failed to load teams", "error");
@@ -297,15 +287,15 @@ class TodoFormPage {
     const title = titleShadowInput ? titleShadowInput.value.trim() : 
       (titleInput ? titleInput.value.trim() : "");
     const description = descriptionInput ? descriptionInput.value.trim() : "";
-    const dueDate = dueDateShadowInput ? dueDateShadowInput.value : 
+    let dueDate = dueDateShadowInput ? dueDateShadowInput.value :
       (dueDateInput ? dueDateInput.value : "");
     const teamId = teamSelect ? teamSelect.value : "";
-    
+    dueDate = dueDate + "T00:00:00"
     return {
       title,
       description,
-      team_id: parseInt(teamId),
-      due_date: dueDate || null,
+      team: parseInt(teamId),
+      dueDate: dueDate || null,
     };
   }
   

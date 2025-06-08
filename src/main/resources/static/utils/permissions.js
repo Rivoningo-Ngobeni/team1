@@ -16,11 +16,9 @@ export default class PermissionService {
     if (!currentUser) return null
 
     try {
-      const response = await ApiService.get(`/teams/${teamId}/members`)
-      if (response.success) {
-        const member = response.data.find((m) => m.user_id === currentUser.id)
-        return member ? member.team_role_name : null
-      }
+      const response = await ApiService.get(`/teaminfo/${teamId}/members`)
+        const member = response.find((m) => m.userId === currentUser.id)
+        return member ? member.roleName : null
     } catch (error) {
       console.error("Error getting team role:", error)
     }
@@ -55,9 +53,9 @@ export default class PermissionService {
     if (this.isSystemAdmin(currentUser)) return true
 
     // Todo creator can edit
-    if (todo.created_by === currentUser.id) return true
+    if (todo.createdBy.id === currentUser.id) return true
 
     // Team leads can edit team todos
-    return await this.isTeamLead(todo.team_id, currentUser.id)
+    return await this.isTeamLead(todo.team.id, currentUser.id)
   }
 }

@@ -131,6 +131,43 @@ export default class ApiService {
     }
   }
 
+  static async apiRequest(method = 'GET', url, data = null, options = {}) {
+  const headers = new Headers({
+    'Content-Type': 'application/json',
+    ...options.headers
+  });
+
+  const config = {
+    method,
+    headers,
+  };
+
+  if (data) {
+    config.body = JSON.stringify(data);
+  }
+
+  try {
+    const response = await fetch('api' + url, config);
+
+    const contentType = response.headers.get('content-type');
+    const isJson = contentType && (contentType.includes('application/json') || contentType.includes('application/hal+json'));
+    const responseData = isJson ? await response.json() : await response.text();
+
+    if (!response.ok) {
+      throw {
+        status: response.status,
+        message: responseData?.message || response.statusText,
+        data: responseData,
+      };
+    }
+
+    return responseData;
+  } catch (error) {
+    console.error('API request failed:', error);
+    throw error;
+  }
+}
+
   static handleMockRequest(method, endpoint, data) {
     // Config endpoint
     if (endpoint === "/config") {
@@ -519,18 +556,27 @@ export default class ApiService {
 
   // API methods
   static async get(endpoint) {
-    return this.request("GET", endpoint)
+    return this.apiRequest("GET", endpoint)
   }
 
   static async post(endpoint, data) {
-    return this.request("POST", endpoint, data)
+    return this.apiRequest("POST", endpoint, data)
   }
+
+    static async mockPost(endpoint, data) {
+      return this.request("POST", endpoint, data)
+    }
+
 
   static async put(endpoint, data) {
-    return this.request("PUT", endpoint, data)
+    return this.apiRequest("PUT", endpoint, data)
   }
 
+    static async patch(endpoint, data) {
+      return this.apiRequest("PATCH", endpoint, data)
+    }
+
   static async delete(endpoint) {
-    return this.request("DELETE", endpoint)
+    return this.apiRequest("DELETE", endpoint)
   }
 }

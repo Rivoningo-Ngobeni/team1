@@ -36,7 +36,7 @@ class AuthService {
       }
 
       // Make login request
-      const response = await ApiService.post("/auth/login", {
+      const response = await ApiService.mockPost("/auth/login", {
         username: SecurityUtils.sanitizeText(username),
         password: password, // Don't sanitize password
       })
@@ -94,7 +94,7 @@ class AuthService {
         return { success: false, message: "Session expired. Please login again." }
       }
 
-      const response = await ApiService.post("/auth/verify-2fa", {
+      const response = await ApiService.mockPost("/auth/verify-2fa", {
         username: tempAuth.username,
         code: SecurityUtils.sanitizeText(code),
         partialToken: tempAuth.partialToken,
