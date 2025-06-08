@@ -19,8 +19,7 @@ export default class ConfigService {
     }
 
     try {
-      const response = await ApiService.get('/config/public');
-      const config = await response.json();
+      const config = await ApiService.get('/config/public');
       this.config = config
       this.publicConfigIsLoaded = true
       return this.config
@@ -35,16 +34,11 @@ export default class ConfigService {
     }
 
     try {
-      const response = await ApiService.get('/config')
-      if (!response.ok) {
-        throw new Error("Failed to load configuration")
-      }
-
-      const privateConfig = await response.json();
+      const config = await ApiService.get('/config')
 
       this.config = {
         ...this.config,
-        ...privateConfig
+        ...config
       }
       this.isLoaded = true
       return this.config

@@ -130,6 +130,55 @@ export default class ApiService {
       throw new Error(error.message || "API request failed")
     }
   }
+  
+  static async request(method, endpoint, data = undefined, queryParams = {}) {
+    const urlSearchParams = new URLSearchParams(queryParams);
+    const url = `${window.location.origin}/api${endpoint}?${urlSearchParams.toString()}`
+
+
+    if (method.toString().toLowerCase() === "get" && data) {
+      throw new Error("GET request cannot include a body")
+    }
+
+    try {
+      return fetch(url, {
+        method: method,
+        headers: {
+          "Content-Type": "application/json",
+          ...(AuthService.getAuthToken() && { "Authorization": "Bearer " + AuthService.getAuthToken() })
+        },
+        body: JSON.stringify(data),
+      })
+    } catch (error) {
+      throw new Error(error.message || "API request failed")
+    }
+  }
+
+  static async register(username, password) {
+    const response = await this.request("POST", "/auth/register", {
+      username: username,
+      password: password,
+    })
+
+    return [await response.json(), response.ok];
+  }
+
+  static async verifyTwoFactor(username, code) {
+    const response = await this.request("POST", "/auth/verify-2fa", {
+      username: username,
+      code: code,
+    })
+    return [await response.json(), response.ok];
+  }
+
+  static async login(username, password, totpCode) {
+    const response = await this.request("POST", "/auth/login", {
+      username: username,
+      password: password,
+      totpCode: totpCode,
+    })
+    return [await response.json(), response.ok];
+  }
 
   static async register(username, password) {
     return this.post("/auth/register", {

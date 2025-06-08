@@ -53,11 +53,11 @@ class AuthService {
   async register(username, password) {
     // Validate inputs
     if (!SecurityUtils.validateUsername(username)) {
-      return { success: false, message: "Username must be 3-50 characters, letters, numbers, and underscores only" }
+      throw new Error("Username must be 3-50 characters, letters, numbers, and underscores only")
     }
 
     if (!SecurityUtils.validatePassword(password)) {
-      return { success: false, message: "Password must be at least 8 characters" }
+      throw new Error("Password must be at least 8 characters")
     }
 
     return ApiService.register(username, password);

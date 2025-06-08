@@ -295,18 +295,13 @@ class TotpSetupPage {
     TotpSetupPage.showLoading('verify-btn', 'Verifying...');
 
     try {
-      const [response, success] = await AuthService.verifyTwoFactor(TotpSetupPage.username, code);
+      const response = await AuthService.verifyTwoFactor(TotpSetupPage.username, code);
       
-      if (success) {
-        TotpSetupPage.showStep(4);
-        ToastService.show(response.message, "success");
-      } else {
-        ToastService.show(response.message, "error");
-      }
+      TotpSetupPage.showStep(4);
+      ToastService.show(response.message, "success");
       
     } catch (error) {
-      TotpSetupPage.showError(codeInput, "Invalid verification code. Please check your authenticator app and try again.");
-      console.error('Verification error:', error);
+      TotpSetupPage.showError(codeInput, "There was an issue verifying your code. Please try again.");
     } finally {
       TotpSetupPage.hideLoading('verify-btn', 'Enable Two-Factor Authentication');
     }
