@@ -25,7 +25,7 @@ class Router {
     }
   }
 
-  navigate(path, replace = false) {
+  navigate(path, payload = undefined, replace = false) {
     if (path === this.currentPath) return;
 
     // Call before route change hook
@@ -50,10 +50,10 @@ class Router {
       history.pushState(null, "", '#' + path)
     }
 
-    this.handleRoute()
+    this.handleRoute(payload)
   }
 
-  handleRoute() {
+  handleRoute(payload = undefined) {
     // Extract path from hash without the "#" prefix
     const hash = window.location.hash.replace(/^#\/?/, "/") || "/"
     this.currentPath = hash
@@ -71,7 +71,7 @@ class Router {
     }
 
     // Redirect authenticated users away from auth pages
-    const authRoutes = ["/login", "/signup", "/two-factor"]
+    const authRoutes = ["/login", "/signup", "/two-factor", "/totp-setup"]
     const isAuthRoute = authRoutes.includes(hash)
 
     if (isAuthRoute && window.AuthService?.isAuthenticated()) {
@@ -87,7 +87,7 @@ class Router {
       for (const route of this.regexRoutes) {
         const match = hash.match(route.pattern)
         if (match) {
-          handler = () => route.handler(match)
+          handler = (payload) => route.handler(match, payload)
           break
         }
       }
@@ -100,7 +100,7 @@ class Router {
 
     if (handler) {
       try {
-        handler()
+        handler(payload)
 
         // Call after route change hook
         if (this.afterRouteChange) {

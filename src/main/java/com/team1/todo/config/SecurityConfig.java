@@ -1,10 +1,10 @@
 package com.team1.todo.config;
-import com.team1.todo.security.JwtAuthFilter;
-import com.team1.todo.service.UserDetailsService;
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -21,8 +21,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
-import java.util.List;
+import com.team1.todo.security.JwtAuthFilter;
+import com.team1.todo.service.UserDetailsService;
 
 @Configuration
 @EnableWebSecurity
@@ -65,7 +65,20 @@ public class SecurityConfig {
                                 .requestMatchers("/api/auth/reset-2fa").authenticated()
                         .requestMatchers("/api/admin/**").hasRole("SYSTEM_ADMIN")
                         .requestMatchers("/api/team-lead/**").hasAnyRole("SYSTEM_ADMIN", "TEAM_LEAD")
-                        .anyRequest().authenticated() ///  change to permitAll if testing without auth
+                        .requestMatchers(
+                                "/",
+                                "/index.html",
+                                "/app.js",
+                                "/styles.css",
+                                "/static/**",
+                                "/components/**",
+                                "/pages/**",
+                                "/utils/**",
+                                "/utils/config"
+                        ).permitAll()
+                        .requestMatchers("/api/config/public", "/api/config/public/**").permitAll()
+                        .requestMatchers("/api/config", "/api/config/**").authenticated()
+                        .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider());
                 http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

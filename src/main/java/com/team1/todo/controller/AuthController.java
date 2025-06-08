@@ -1,8 +1,16 @@
 package com.team1.todo.controller;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageConfig;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import com.team1.todo.entity.User;
 import com.team1.todo.service.AuthService;
 import jakarta.validation.constraints.Size;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -25,12 +35,18 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         try {
-            authService.registerUser(
+            User registeredUser = authService.registerUser(
                     request.getUsername(),
                     request.getPassword(),
                     request.getRole()
             );
-            return ResponseEntity.ok(new ApiResponse("User registered successfully"));
+            if (registeredUser != null) {
+                String username = request.getUsername();
+                String qrCodeUrl = authService.setup2FA(username);
+                return ResponseEntity.ok(new Setup2FAResponse(qrCodeUrl));
+            } else {
+                return ResponseEntity.badRequest().body(new ApiResponse("User registration failed"));
+            }
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(e.getMessage()));
         }
@@ -92,7 +108,7 @@ public class AuthController {
         private String username;
 
         @NotBlank
-        @Size(min = 8)
+        @Size(min = 8, max = 256)
         private String password;
 
         private String role = "todo_user";
@@ -125,9 +141,11 @@ public class AuthController {
 
     public static class LoginRequest {
         @NotBlank
+        @Size(max = 50)
         private String username;
 
         @NotBlank
+        @Size(max = 256)
         private String password;
 
         private String totpCode;
@@ -189,13 +207,44 @@ public class AuthController {
         }
     }
 
-    public static class Setup2FAResponse {
+    public static class Setup2FAResponse extends ApiResponse {
         private String qrCodeUrl;
-        public Setup2FAResponse(String qrCodeUrl) {
+        private String totpSecret;
+        private byte[] qrCodeImage;
+
+        private static final int QR_CODE_WIDTH = 300;
+        private static final int QR_CODE_HEIGHT = 300;
+
+
+        public Setup2FAResponse(String qrCodeUrl) throws IOException, WriterException {
+            super("User registered successfully and 2FA setup initiated");
             this.qrCodeUrl = qrCodeUrl;
+            this.qrCodeImage = Setup2FAResponse.getQRCodeImage(qrCodeUrl, QR_CODE_WIDTH, QR_CODE_HEIGHT);
+            this.totpSecret = qrCodeUrl.split("secret=")[1].split("&")[0];
         }
+
+        public static byte[] getQRCodeImage(String text, int width, int height) throws IOException, WriterException {
+            QRCodeWriter qrCodeWriter = new QRCodeWriter();
+            BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, width, height);
+
+            ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+            MatrixToImageConfig con = new MatrixToImageConfig( 0xFF000000 , 0xFFFFFFFF ) ;
+
+            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream,con);
+            byte[] pngData = pngOutputStream.toByteArray();
+            return pngData;
+        }
+
         public String getQrCodeUrl() {
             return qrCodeUrl;
+        }
+
+        public String getTotpSecret() {
+            return totpSecret;
+        }
+
+        public byte[] getQrCodeImage() {
+            return qrCodeImage;
         }
     }
 }

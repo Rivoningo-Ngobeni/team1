@@ -1,6 +1,32 @@
+import ApiService from "./api.js"
+
 export default class ConfigService {
   static config = {}
+  static publicConfigIsLoaded = false
   static isLoaded = false
+
+  static async getConfig() {
+    if (!this.isLoaded) {
+      await this.loadPublicConfig()
+      await this.loadConfig()
+    }
+    return this.config
+  }
+
+  static async loadPublicConfig() {
+    if (this.publicConfigIsLoaded) {
+      return this.config;
+    }
+
+    try {
+      const config = await ApiService.get('/config/public');
+      this.config = config
+      this.publicConfigIsLoaded = true
+      return this.config
+    } catch (error) {
+      console.error("Public config loading error:", error);
+    }
+  }
 
   static async loadConfig() {
     if (this.isLoaded) {
@@ -8,12 +34,12 @@ export default class ConfigService {
     }
 
     try {
-      const response = await fetch("/api/config")
-      if (!response.ok) {
-        throw new Error("Failed to load configuration")
-      }
+      const config = await ApiService.get('/config')
 
-      this.config = await response.json()
+      this.config = {
+        ...this.config,
+        ...config
+      }
       this.isLoaded = true
       return this.config
     } catch (error) {
@@ -27,11 +53,11 @@ export default class ConfigService {
 
   static getDefaultConfig() {
     return {
-      API_BASE_URL: "/api",
+      apiBaseUrl: `${window.location.origin}/api`,
       APP_NAME: "Team Todo App",
       SESSION_TIMEOUT: 3600000, // 1 hour
       MAX_FILE_SIZE: 5242880, // 5MB
-      SUPPORTED_FILE_TYPES: ["jpg", "jpeg", "png", "gif", "pdf", "doc", "docx"],
+      SUPPORTED_FILE_TYPES: [],
       PAGINATION_SIZE: 20,
       PASSWORD_MIN_LENGTH: 8,
       USERNAME_MIN_LENGTH: 3,

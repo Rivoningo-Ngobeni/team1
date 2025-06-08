@@ -26,7 +26,9 @@ class AppNavigation extends HTMLElement {
       <nav class="navigation" role="navigation" aria-label="Main navigation">
           <header class="user-info">
               <div class="username">${SecurityUtils.sanitizeText(user?.username || "User")}</div>
-              <div class="user-roles">${user?.system_roles?.join(", ") || "No roles"}</div>
+              <div class="user-roles">${SecurityUtils.sanitizeText(
+                  ((user?.systemRoles || []).concat(user?.teamRoles || [])).join(", ") || "No roles"
+              )}</div>
           </header>
           
           <section class="nav-section">

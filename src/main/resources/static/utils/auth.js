@@ -1,4 +1,5 @@
 import ApiService from "./api.js"
+import ConfigService from "./config.js"
 import SecurityUtils from "./security.js"
 import StorageService from "./storage.js"
 
@@ -24,95 +25,54 @@ class AuthService {
     this.setupCSRFProtection()
   }
 
-  async login(username, password) {
-    try {
-      // Validate inputs
-      if (!SecurityUtils.validateUsername(username)) {
-        return { success: false, message: "Invalid username format" }
-      }
-
-      if (!SecurityUtils.validatePassword(password)) {
-        return { success: false, message: "Password must be at least 8 characters" }
-      }
-
-      // Make login request
-      const response = await ApiService.mockPost("/auth/login", {
-        username: SecurityUtils.sanitizeText(username),
-        password: password, // Don't sanitize password
-      })
-
-      if (response.success) {
-        if (response.requiresTwoFactor) {
-          // Store temporary auth data for 2FA
-          StorageService.setSecure("temp_auth", {
-            username,
-            partialToken: response.partialToken,
-          })
-          return { success: true, requiresTwoFactor: true }
-        } else {
-          // Complete login
-          this.setSession(response.user, response.token, response.refreshToken)
-          return { success: true, user: response.user }
-        }
-      }
-
-      return response
-    } catch (error) {
-      console.error("Login error:", error)
-      return { success: false, message: "Login failed. Please try again." }
+  async login(username, password, totpCode) {
+    // Validate inputs
+    if (!SecurityUtils.validateUsername(username)) {
+      return { success: false, message: "Invalid username format" }
     }
+
+    if (!SecurityUtils.validatePassword(password)) {
+      return { success: false, message: "Password must be at least 8 characters" }
+    }
+
+    // Make login request
+    const response = await ApiService.login(username, password, totpCode)
+
+    this.setSession(response.user, response.token, response.refreshToken)
+    await ConfigService.loadConfig();
+    return {
+      success: true,
+      message: response.message,
+      token: response.token,
+      systemRole: response.role,
+      user: response.user,
+    }
+
   }
 
-  async signup(username, password) {
-    try {
-      // Validate inputs
-      if (!SecurityUtils.validateUsername(username)) {
-        return { success: false, message: "Username must be 3-50 characters, letters, numbers, and underscores only" }
-      }
-
-      if (!SecurityUtils.validatePassword(password)) {
-        return { success: false, message: "Password must be at least 8 characters" }
-      }
-
-      // Make signup request
-      const response = await ApiService.post("/auth/signup", {
-        username: SecurityUtils.sanitizeText(username),
-        password: password,
-      })
-
-      return response
-    } catch (error) {
-      console.error("Signup error:", error)
-      return { success: false, message: "Signup failed. Please try again." }
+  async register(username, password) {
+    // Validate inputs
+    if (!SecurityUtils.validateUsername(username)) {
+      throw new Error("Username must be 3-50 characters, letters, numbers, and underscores only")
     }
+
+    if (!SecurityUtils.validatePassword(password)) {
+      throw new Error("Password must be at least 8 characters")
+    }
+
+    return ApiService.register(username, password);
   }
 
-  async verifyTwoFactor(code) {
-    try {
-      const tempAuth = StorageService.getSecure("temp_auth")
-      if (!tempAuth) {
-        return { success: false, message: "Session expired. Please login again." }
-      }
-
-      const response = await ApiService.mockPost("/auth/verify-2fa", {
-        username: tempAuth.username,
-        code: SecurityUtils.sanitizeText(code),
-        partialToken: tempAuth.partialToken,
-      })
-
-      if (response.success) {
-        // Clear temporary auth data
-        StorageService.remove("temp_auth")
-
-        // Set full session
-        this.setSession(response.user, response.token, response.refreshToken)
-      }
-
-      return response
-    } catch (error) {
-      console.error("2FA verification error:", error)
-      return { success: false, message: "Verification failed. Please try again." }
+  async verifyTwoFactor(username, code) {
+    if (!code) {
+      throw new Error("Verification code is required")
+    } else if (!username) {
+      throw new Error("Username is required")
+    } else if (!/^\d{6}$/.test(code)) {
+      throw new Error("Verification code must be 6 numeric digits")
     }
+
+    return ApiService.verifyTwoFactor(username, code)
   }
 
   setSession(user, token, refreshToken = null) {
@@ -136,12 +96,13 @@ class AuthService {
     this.updateCSRFToken()
   }
 
-  loadSession() {
+  async loadSession() {
     this.currentUser = StorageService.getSecure("current_user")
     this.authToken = StorageService.getSecure("auth_token")
     this.refreshToken = StorageService.getSecure("refresh_token")
 
     if (this.authToken && this.refreshToken) {
+      await ConfigService.loadConfig();
       this.scheduleTokenRefresh()
     }
   }
@@ -195,7 +156,7 @@ class AuthService {
     }
 
     try {
-      const response = await ApiService.post("/auth/refresh", {
+      const response = await ApiService.mockPost("/auth/refresh", {
         refreshToken: this.refreshToken,
       })
 
@@ -248,7 +209,7 @@ class AuthService {
 
   async validateSession() {
     try {
-      const response = await ApiService.get("/auth/validate")
+      const response = await ApiService.mockGet("/auth/validate")
       if (!response.success) {
         this.logout()
         window.dispatchEvent(new CustomEvent("auth:session-expired"))

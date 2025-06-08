@@ -1,11 +1,16 @@
 import { ToastService } from "../components/app-toast.js"
-import AuthService from "../utils/auth.js"
 import Router from "../utils/router.js"
 
 class LoginPage {
-  static render() {
+  static username = null
+
+  static render(payload) {
     const app = document.getElementById("app")
     app.innerHTML = ""
+
+    if (payload && payload.username) {
+      LoginPage.username = payload.username
+    }
 
     // Create semantic structure
     const layout = document.createElement("div")
@@ -30,32 +35,30 @@ class LoginPage {
     form.innerHTML = `
             <div class="form-group">
                 <label for="username" class="form-label">Username</label>
-                <app-input 
+                <input 
                     id="username"
+                    class="standard-input"
                     type="text" 
                     placeholder="Enter your username" 
                     required
-                    autocomplete="username"
-                    aria-describedby="username-error">
-                </app-input>
+                    autocomplete="username">
                 <div id="username-error" class="form-error" role="alert" aria-live="polite"></div>
             </div>
             <div class="form-group">
                 <label for="password" class="form-label">Password</label>
-                <app-input 
+                <input
                     id="password"
+                    class="standard-input"
                     type="password" 
                     placeholder="Enter your password" 
                     required
-                    autocomplete="current-password"
-                    aria-describedby="password-error">
-                </app-input>
+                    autocomplete="current-password">
                 <div id="password-error" class="form-error" role="alert" aria-live="polite"></div>
             </div>
             <div class="form-group">
-                <app-button id="login-button" type="submit" variant="primary" style="width: 100%;">
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
                     Sign In
-                </app-button>
+                </button>
             </div>
         `
 
@@ -76,11 +79,14 @@ class LoginPage {
   }
 
   static setupFormHandling(form) {
-    const usernameAppInput = form.querySelector("#username")
-    const passwordAppInput = form.querySelector("#password")
-    const usernameInput = usernameAppInput && usernameAppInput.shadowRoot ? usernameAppInput.shadowRoot.querySelector('.input') : null
-    const passwordInput = passwordAppInput && passwordAppInput.shadowRoot ? passwordAppInput.shadowRoot.querySelector('.input') : null
-    const submitButton = form.querySelector('app-button[type="submit"]')
+    const usernameInput = form.querySelector("#username")
+    const passwordInput = form.querySelector("#password")
+    const submitButton = form.querySelector("button[type='submit']")
+
+    // Pre-fill username if we have one stored
+    if (LoginPage.username && usernameInput) {
+      usernameInput.value = LoginPage.username
+    }
 
     // Real-time validation
     if (usernameInput) {
@@ -94,117 +100,84 @@ class LoginPage {
       })
     }
 
-    // Form submission - use both capture and bubbling phase
+    // Form submission
     form.addEventListener("submit", async (e) => {
       e.preventDefault()
-      e.stopPropagation()
 
       const isValid = this.validateForm(form)
       if (!isValid) return
 
       if (submitButton) {
-        submitButton.setAttribute("loading", "")
+        submitButton.textContent = "Signing in..."
+        submitButton.disabled = true
       }
 
       try {
         const username = usernameInput ? usernameInput.value.trim() : ""
         const password = passwordInput ? passwordInput.value : ""
 
-        const result = await AuthService.login(username, password)
-
-        if (result.success) {
-          if (result.requiresTwoFactor) {
-            Router.navigate("/two-factor")
-          } else {
-            Router.navigate("/dashboard")
-          }
-          ToastService.show("Login successful", "success")
-        } else {
-          ToastService.show(result.message || "Login failed", "error")
-        }
+        Router.navigate("/two-factor", { username: username, password: password })
       } catch (error) {
         console.error("Login error:", error)
         ToastService.show("An error occurred during login", "error")
-      } finally {
         if (submitButton) {
-          submitButton.removeAttribute("loading")
+          submitButton.textContent = "Sign In"
+          submitButton.disabled = false
         }
       }
-    }, true) // Use capture phase for more reliable event handling
-
-    // Add click handler directly to the submit button as a backup
-    if (submitButton) {
-      submitButton.addEventListener("click", (e) => {
-        // If not already handling a form submission, trigger one
-        if (!submitButton.hasAttribute("loading")) {
-          form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }))
-        }
-      })
-    }
+    })
   }
 
+  // Update the validation methods to work with standard inputs
   static validateUsername(input) {
-    // Get the app-input element if we were passed the native input
-    const appInput = input.tagName === 'INPUT' ? input.getRootNode().host : input;
-    // Get the value from the appropriate element
-    const value = input ? input.value.trim() : ""
+    const value = input.value.trim()
     const errorElement = document.getElementById("username-error")
+    
+    // Clear previous error
+    errorElement.textContent = ""
+    errorElement.style.display = "none"
+    input.setAttribute("aria-invalid", "false")
 
     if (!value) {
-      this.showFieldError(appInput, errorElement, "Username is required")
+      errorElement.textContent = "Username is required"
+      errorElement.style.display = "block"
+      input.setAttribute("aria-invalid", "true")
       return false
     }
 
     if (value.length < 3) {
-      this.showFieldError(appInput, errorElement, "Username must be at least 3 characters")
+      errorElement.textContent = "Username must be at least 3 characters"
+      errorElement.style.display = "block"
+      input.setAttribute("aria-invalid", "true")
       return false
     }
 
-    this.clearFieldError(appInput, errorElement)
     return true
   }
 
   static validatePassword(input) {
-    // Get the app-input element if we were passed the native input
-    const appInput = input.tagName === 'INPUT' ? input.getRootNode().host : input;
-    // Get the value from the appropriate element
-    const value = input ? input.value : ""
+    const value = input.value
     const errorElement = document.getElementById("password-error")
+    
+    // Clear previous error
+    errorElement.textContent = ""
+    errorElement.style.display = "none"
+    input.setAttribute("aria-invalid", "false")
 
     if (!value) {
-      this.showFieldError(appInput, errorElement, "Password is required")
+      errorElement.textContent = "Password is required"
+      errorElement.style.display = "block"
+      input.setAttribute("aria-invalid", "true")
       return false
     }
 
-    this.clearFieldError(appInput, errorElement)
     return true
   }
 
-  static showFieldError(input, errorElement, message) {
-    if (input) {
-      input.setAttribute("aria-invalid", "true")
-    }
-    if (errorElement) {
-      errorElement.textContent = message
-      errorElement.style.display = "block"
-    }
-  }
-
-  static clearFieldError(input, errorElement) {
-    if (input) {
-      input.setAttribute("aria-invalid", "false")
-    }
-    if (errorElement) {
-      errorElement.textContent = ""
-      errorElement.style.display = "none"
-    }
-  }
-
+  // We can simplify these methods since we're using standard inputs
   static validateForm(form) {
-    const usernameAppInput = form.querySelector("#username")
-    const passwordAppInput = form.querySelector("#password")
-    const usernameInput = usernameAppInput && usernameAppInput.shadowRoot ? usernameAppInput.shadowRoot.querySelector('.input') : null
-    const passwordInput = passwordAppInput && passwordAppInput.shadowRoot ? passwordAppInput.shadowRoot.querySelector('.input') : null
+    const usernameInput = form.querySelector("#username")
+    const passwordInput = form.querySelector("#password")
 
     const isUsernameValid = this.validateUsername(usernameInput)
     const isPasswordValid = this.validatePassword(passwordInput)
