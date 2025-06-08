@@ -13,10 +13,6 @@ JAR_NAME="target/todo-0.0.1-app.jar"
 mkdir -p "$APP_DIR"
 cd "$APP_DIR"
 
-# (Optional) Download the JAR from S3 or another location
-# aws s3 cp s3://your-bucket-name/$JAR_NAME .
-
-
 cat <<EOF > /etc/systemd/system/team_one.service
 [Unit]
 Description=Team One Java Backend Service
@@ -25,7 +21,8 @@ After=network.target
 [Service]
 User=ec2-user
 WorkingDirectory=$APP_DIR
-ExecStart=/bin/bash -c 'set -a && source $APP_DIR/.env && exec /usr/bin/java -jar $APP_DIR/$JAR_NAME'
+EnvironmentFile=$APP_DIR/.env
+ExecStart=/usr/bin/java -jar $APP_DIR/$JAR_NAME
 SuccessExitStatus=143
 Restart=on-failure
 RestartSec=10
