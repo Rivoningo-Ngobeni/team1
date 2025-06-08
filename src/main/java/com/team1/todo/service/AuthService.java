@@ -1,18 +1,20 @@
 package com.team1.todo.service;
 
-import com.team1.todo.entity.User;
-import com.team1.todo.repository.SystemRoleRepository;
-import com.team1.todo.repository.UserRepository;
-import com.team1.todo.repository.UserSystemRoleRepository;
-import com.team1.todo.security.JwtUtil;
+import java.security.SecureRandom;
+import java.util.Base64;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.SecureRandom;
-import java.util.Base64;
-import java.util.Optional;
+import com.team1.todo.entity.PublicUser;
+import com.team1.todo.entity.User;
+import com.team1.todo.repository.SystemRoleRepository;
+import com.team1.todo.repository.UserRepository;
+import com.team1.todo.repository.UserSystemRoleRepository;
+import com.team1.todo.security.JwtUtil;
 
 @Service
 public class AuthService {
@@ -34,6 +36,9 @@ public class AuthService {
     @Autowired
     private TotpService totpService;
 
+    @Autowired
+    private UserService userService;
+
     private static final SecureRandom secureRandom = new SecureRandom();
 
     @Transactional
@@ -53,7 +58,7 @@ public class AuthService {
         user.setPasswordHash(passwordEncoder.encode(password + salt));
         user.setTwoFaSecret(totpSecret);
 
-        return userRepository.save(user);
+        return userService.createUserWithDefaultSystemRole(user);
     }
 
     public AuthenticationResponse authenticate(String username, String password, String totpCode) {
@@ -86,7 +91,7 @@ public class AuthService {
         }
 
         String token = jwtUtil.generateToken(user);
-        return new AuthenticationResponse(token, true, true, user.getPrimaryRole());
+        return new AuthenticationResponse(token, true, true, user.getPrimaryRole(), user);
     }
 
     public String setup2FA(String username) {
@@ -125,12 +130,14 @@ public class AuthService {
             private final boolean requiresTwoFa;
             private boolean success;
             private String role;
+            private final PublicUser user;
 
-            public AuthenticationResponse(String token, boolean requiresTwoFa, boolean success, String role) {
+            public AuthenticationResponse(String token, boolean requiresTwoFa, boolean success, String role, User user) {
                 this.token = token;
                 this.requiresTwoFa = requiresTwoFa;
                 this.success = success;
                 this.role = role;
+                this.user = new PublicUser(user);
             }
 
             // Getters
@@ -138,5 +145,6 @@ public class AuthService {
             public boolean isRequiresTwoFa() { return requiresTwoFa; }
             public boolean isSuccess() { return success; }
             public String getRole() { return role; }
+            public PublicUser getUser() { return user; }
         }
     }

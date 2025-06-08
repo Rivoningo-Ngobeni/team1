@@ -129,21 +129,24 @@ class SignupPage {
         const username = usernameInput.value.trim()
         const password = passwordInput.value
         
-        console.log(`Attempting to create account for user: ${username}`);
-        const result = await AuthService.signup(username, password)
+        const [result, success] = await AuthService.register(username, password)
 
-        if (result.success) {
-          console.log("Account created successfully");
-          ToastService.show("Account created successfully! Please sign in.", "success")
-          Router.navigate("/login")
+        if (success) {
+          ToastService.show("Account created successfully!", "success")
+          console.log("Register result:", result)
+          const payload = {
+            username: username,
+            qrCodeUrl: result.qrCodeUrl,
+            qrCodeImage: result.qrCodeImage,
+            totpSecret: result.totpSecret
+          }
+          Router.navigate("/totp-setup", payload)
         } else {
-          console.error("Signup failed:", result);
           ToastService.show(result.message || "Signup failed", "error")
           submitButton.textContent = "Create Account"
           submitButton.disabled = false
         }
       } catch (error) {
-        console.error("Signup error:", error);
         ToastService.show("An error occurred during signup", "error")
         submitButton.textContent = "Create Account"
         submitButton.disabled = false

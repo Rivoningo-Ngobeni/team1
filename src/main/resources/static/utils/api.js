@@ -1,6 +1,6 @@
-export default class ApiService {
-  static config = null
+import AuthService from "./auth.js";
 
+export default class ApiService {
   // Enhanced mock data with more comprehensive structure
   static mockData = {
     config: {
@@ -120,7 +120,7 @@ export default class ApiService {
     ],
   }
 
-  static async request(method, endpoint, data = null) {
+  static async mockRequest(method, endpoint, data = null) {
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 300))
 
@@ -131,11 +131,37 @@ export default class ApiService {
     }
   }
 
-  static async apiRequest(method = 'GET', url, data = null, options = {}) {
+  static async register(username, password) {
+    return this.post("/auth/register", {
+      username: username,
+      password: password,
+    })
+  }
+
+  static async verifyTwoFactor(username, code) {
+    return this.post("/auth/verify-2fa", {
+      username: username,
+      code: code,
+    })
+  }
+
+  static async login(username, password, totpCode) {
+    return this.post("/auth/login", {
+      username: username,
+      password: password,
+      totpCode: totpCode,
+    })
+  }
+
+  static async apiRequest(method = 'GET', url, data = null, options = {}, queryParams = {}) {
   const headers = new Headers({
     'Content-Type': 'application/json',
+    ...(AuthService.getAuthToken() && { "Authorization": "Bearer " + AuthService.getAuthToken() }),
     ...options.headers
   });
+
+  const urlSearchParams = new URLSearchParams(queryParams);
+
 
   const config = {
     method,
@@ -147,7 +173,7 @@ export default class ApiService {
   }
 
   try {
-    const response = await fetch('api' + url, config);
+    const response = await fetch('api' + url + '?' + urlSearchParams.toString(), config);
 
     const contentType = response.headers.get('content-type');
     const isJson = contentType && (contentType.includes('application/json') || contentType.includes('application/hal+json'));
@@ -562,11 +588,6 @@ export default class ApiService {
   static async post(endpoint, data) {
     return this.apiRequest("POST", endpoint, data)
   }
-
-    static async mockPost(endpoint, data) {
-      return this.request("POST", endpoint, data)
-    }
-
 
   static async put(endpoint, data) {
     return this.apiRequest("PUT", endpoint, data)

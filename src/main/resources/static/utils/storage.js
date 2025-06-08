@@ -1,64 +1,13 @@
 class StorageService {
   constructor() {
     this.prefix = "team_todo_"
-    this.encryptionKey = this.getOrCreateEncryptionKey()
-  }
-
-  // Encryption key management
-  getOrCreateEncryptionKey() {
-    let key = localStorage.getItem(this.prefix + "enc_key")
-    if (!key) {
-      key = this.generateEncryptionKey()
-      localStorage.setItem(this.prefix + "enc_key", key)
-    }
-    return key
-  }
-
-  generateEncryptionKey() {
-    const array = new Uint8Array(32)
-    crypto.getRandomValues(array)
-    return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("")
-  }
-
-  // Simple encryption/decryption (for demo purposes)
-  encrypt(data) {
-    try {
-      const jsonString = JSON.stringify(data)
-      // Simple XOR encryption for demo
-      let encrypted = ""
-      for (let i = 0; i < jsonString.length; i++) {
-        encrypted += String.fromCharCode(
-          jsonString.charCodeAt(i) ^ this.encryptionKey.charCodeAt(i % this.encryptionKey.length),
-        )
-      }
-      return btoa(encrypted)
-    } catch (error) {
-      console.error("Encryption error:", error)
-      return null
-    }
-  }
-
-  decrypt(encryptedData) {
-    try {
-      const encrypted = atob(encryptedData)
-      let decrypted = ""
-      for (let i = 0; i < encrypted.length; i++) {
-        decrypted += String.fromCharCode(
-          encrypted.charCodeAt(i) ^ this.encryptionKey.charCodeAt(i % this.encryptionKey.length),
-        )
-      }
-      return JSON.parse(decrypted)
-    } catch (error) {
-      console.error("Decryption error:", error)
-      return null
-    }
   }
 
   // Secure storage methods
-  setSecure(key, value, encrypt = true) {
+  setSecure(key, value) {
     try {
       const fullKey = this.prefix + key
-      const dataToStore = encrypt ? this.encrypt(value) : JSON.stringify(value)
+      const dataToStore = JSON.stringify(value)
 
       if (this.isSessionData(key)) {
         sessionStorage.setItem(fullKey, dataToStore)
@@ -72,7 +21,7 @@ class StorageService {
     }
   }
 
-  getSecure(key, decrypt = true) {
+  getSecure(key) {
     try {
       const fullKey = this.prefix + key
       let data
@@ -85,7 +34,7 @@ class StorageService {
 
       if (!data) return null
 
-      return decrypt ? this.decrypt(data) : JSON.parse(data)
+      return JSON.parse(data)
     } catch (error) {
       console.error("Retrieval error:", error)
       return null
@@ -112,11 +61,11 @@ class StorageService {
       timestamp: Date.now(),
       ttl,
     }
-    this.setSecure(`cache_${key}`, cacheData, false)
+    this.setSecure(`cache_${key}`, cacheData)
   }
 
   getCache(key) {
-    const cacheData = this.getSecure(`cache_${key}`, false)
+    const cacheData = this.getSecure(`cache_${key}`)
     if (!cacheData) return null
 
     const { value, timestamp, ttl } = cacheData
