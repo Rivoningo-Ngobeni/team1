@@ -5,6 +5,7 @@ import SignupPage from "./pages/signup.js"
 import TeamManagementPage from "./pages/team-management.js"
 import TeamsPage from "./pages/teams.js"
 import TodoFormPage from "./pages/todo-form.js"
+import TotpSetupPage from "./pages/totp-setup.js"
 import TwoFactorPage from "./pages/two-factor.js"
 import UserManagementPage from "./pages/user-management.js"
 import AuthService from "./utils/auth.js"
@@ -16,15 +17,16 @@ class App {
   static async init() {
     try {
       // Load configuration first
-      await ConfigService.loadConfig()
+      await ConfigService.loadPublicConfig()
 
-      // Setup routes
-      Router.addRoute("/login", () => LoginPage.render())
-      Router.addRoute("/signup", () => SignupPage.render())
-      Router.addRoute("/two-factor", () => TwoFactorPage.render())
-      Router.addRoute("/dashboard", () => DashboardPage.render())
-      Router.addRoute("/teams", () => TeamsPage.render())
-      Router.addRoute("/admin/users", () => UserManagementPage.render())
+      // Setup routes with payload support
+      Router.addRoute("/login", (payload) => LoginPage.render(payload))
+      Router.addRoute("/signup", (payload) => SignupPage.render(payload))
+      Router.addRoute("/totp-setup", (payload) => TotpSetupPage.render(payload))
+      Router.addRoute("/two-factor", (payload) => TwoFactorPage.render(payload))
+      Router.addRoute("/dashboard", (payload) => DashboardPage.render(payload))
+      Router.addRoute("/teams", (payload) => TeamsPage.render(payload))
+      Router.addRoute("/admin/users", (payload) => UserManagementPage.render(payload))
       Router.addRoute("/404", () => this.render404())
       Router.addRoute("/", () => {
         if (AuthService.isAuthenticated()) {

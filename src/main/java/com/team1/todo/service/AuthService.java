@@ -1,8 +1,7 @@
 package com.team1.todo.service;
 
-import com.team1.todo.entity.SystemRole;
+import com.team1.todo.entity.PublicUser;
 import com.team1.todo.entity.User;
-import com.team1.todo.entity.UserSystemRole;
 import com.team1.todo.dao.SystemRoleRepository;
 import com.team1.todo.dao.UserRepository;
 import com.team1.todo.dao.UserSystemRoleRepository;
@@ -36,6 +35,9 @@ public class AuthService {
     @Autowired
     private TotpService totpService;
 
+    @Autowired
+    private UserService userService;
+
     private static final SecureRandom secureRandom = new SecureRandom();
 
     @Transactional
@@ -55,7 +57,7 @@ public class AuthService {
         user.setPasswordHash(passwordEncoder.encode(password + salt));
         user.setTwoFaSecret(totpSecret);
 
-        return userRepository.save(user);
+        return userService.createUserWithDefaultSystemRole(user);
     }
 
     public AuthenticationResponse authenticate(String username, String password, String totpCode) {
@@ -88,7 +90,7 @@ public class AuthService {
         }
 
         String token = jwtUtil.generateToken(user);
-        return new AuthenticationResponse(token, true, true, user.getPrimaryRole());
+        return new AuthenticationResponse(token, true, true, user.getPrimaryRole(), user);
     }
 
     public String setup2FA(String username) {
@@ -127,12 +129,14 @@ public class AuthService {
             private final boolean requiresTwoFa;
             private boolean success;
             private String role;
+            private final PublicUser user;
 
-            public AuthenticationResponse(String token, boolean requiresTwoFa, boolean success, String role) {
+            public AuthenticationResponse(String token, boolean requiresTwoFa, boolean success, String role, User user) {
                 this.token = token;
                 this.requiresTwoFa = requiresTwoFa;
                 this.success = success;
                 this.role = role;
+                this.user = new PublicUser(user);
             }
 
             // Getters
@@ -140,5 +144,6 @@ public class AuthService {
             public boolean isRequiresTwoFa() { return requiresTwoFa; }
             public boolean isSuccess() { return success; }
             public String getRole() { return role; }
+            public PublicUser getUser() { return user; }
         }
     }

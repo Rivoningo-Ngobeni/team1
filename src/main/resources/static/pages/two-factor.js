@@ -1,11 +1,23 @@
+import { ToastService } from "../components/app-toast.js"
 import AuthService from "../utils/auth.js"
 import Router from "../utils/router.js"
-import { ToastService } from "../components/app-toast.js"
 
 class TwoFactorPage {
-  static render() {
+
+  static username = null
+  static password = null
+
+  static render({ username, password }) {
     const app = document.getElementById("app")
     app.innerHTML = ""
+
+    if (username) {
+      TwoFactorPage.username = username
+    }
+
+    if (password) {
+      TwoFactorPage.password = password
+    }
 
     // Create semantic structure
     const layout = document.createElement("div")
@@ -28,8 +40,9 @@ class TwoFactorPage {
     form.innerHTML = `
             <div class="form-group">
                 <label for="verification-code" class="form-label">Verification Code</label>
-                <app-input 
+                <input 
                     id="verification-code"
+                    class="form-control"
                     type="text" 
                     placeholder="000000" 
                     required
@@ -37,14 +50,13 @@ class TwoFactorPage {
                     pattern="[0-9]{6}"
                     autocomplete="one-time-code"
                     aria-describedby="code-error code-help">
-                </app-input>
                 <div id="code-help" class="form-help">Enter the 6-digit code from your authenticator app</div>
                 <div id="code-error" class="form-error" role="alert" aria-live="polite"></div>
             </div>
             <div class="form-group">
-                <app-button type="submit" variant="primary" style="width: 100%;">
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
                     Verify Code
-                </app-button>
+                </button>
             </div>
         `
 
@@ -66,11 +78,11 @@ class TwoFactorPage {
 
   static setupFormHandling(form) {
     const codeInput = form.querySelector("#verification-code")
-    const submitButton = form.querySelector('app-button[type="submit"]')
+    const submitButton = form.querySelector('button[type="submit"]')
 
     // Auto-format input (numbers only)
     codeInput.addEventListener("input", (e) => {
-      let value = e.detail.value.replace(/\D/g, "") // Remove non-digits
+      let value = e.target.value.replace(/\D/g, "") // Remove non-digits
       if (value.length > 6) {
         value = value.slice(0, 6)
       }
@@ -96,11 +108,12 @@ class TwoFactorPage {
       const isValid = this.validateCode(codeInput)
       if (!isValid) return
 
-      submitButton.setAttribute("loading", "")
+      submitButton.disabled = true
+      submitButton.textContent = "Verifying..."
 
       try {
         const code = codeInput.value.trim()
-        const result = await AuthService.verifyTwoFactor(code)
+        const result = await AuthService.login(TwoFactorPage.username, TwoFactorPage.password, code)
 
         if (result.success) {
           ToastService.show("Authentication successful!", "success")
@@ -109,11 +122,13 @@ class TwoFactorPage {
           ToastService.show(result.message || "Invalid verification code", "error")
           codeInput.value = ""
           codeInput.focus()
+          Router.navigate("/login", { username: TwoFactorPage.username })
         }
       } catch (error) {
         ToastService.show("An error occurred during verification", "error")
       } finally {
-        submitButton.removeAttribute("loading")
+        submitButton.disabled = false
+        submitButton.textContent = "Verify Code"
       }
     })
 
@@ -122,33 +137,30 @@ class TwoFactorPage {
   }
 
   static validateCode(input) {
-    const value = input.value.trim()
     const errorElement = document.getElementById("code-error")
+    const value = input.value ? input.value.trim() : ""
 
     if (!value) {
-      this.showFieldError(input, errorElement, "Verification code is required")
+      input.classList.add("is-invalid")
+      input.setAttribute("aria-invalid", "true")
+      errorElement.textContent = "Verification code is required"
+      errorElement.style.display = "block"
       return false
     }
 
     if (!/^\d{6}$/.test(value)) {
-      this.showFieldError(input, errorElement, "Please enter a 6-digit code")
+      input.classList.add("is-invalid")
+      input.setAttribute("aria-invalid", "true")
+      errorElement.textContent = "Please enter a 6-digit code"
+      errorElement.style.display = "block"
       return false
     }
 
-    this.clearFieldError(input, errorElement)
-    return true
-  }
-
-  static showFieldError(input, errorElement, message) {
-    input.setAttribute("aria-invalid", "true")
-    errorElement.textContent = message
-    errorElement.style.display = "block"
-  }
-
-  static clearFieldError(input, errorElement) {
+    input.classList.remove("is-invalid")
     input.setAttribute("aria-invalid", "false")
     errorElement.textContent = ""
     errorElement.style.display = "none"
+    return true
   }
 }
 

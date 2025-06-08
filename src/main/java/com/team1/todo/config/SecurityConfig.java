@@ -64,6 +64,19 @@ public class SecurityConfig {
                                 .requestMatchers("/api/auth/reset-2fa").authenticated()
                         .requestMatchers("/api/admin/**").hasRole("SYSTEM_ADMIN")
                         .requestMatchers("/api/team-lead/**").hasAnyRole("SYSTEM_ADMIN", "TEAM_LEAD")
+                        .requestMatchers(
+                                "/",
+                                "/index.html",
+                                "/app.js",
+                                "/styles.css",
+                                "/static/**",
+                                "/components/**",
+                                "/pages/**",
+                                "/utils/**",
+                                "/utils/config"
+                        ).permitAll()
+                        .requestMatchers("/api/config/public", "/api/config/public/**").permitAll()
+                        .requestMatchers("/api/config", "/api/config/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider());

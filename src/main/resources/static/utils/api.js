@@ -1,6 +1,6 @@
-export default class ApiService {
-  static config = null
+import AuthService from "./auth.js";
 
+export default class ApiService {
   // Enhanced mock data with more comprehensive structure
   static mockData = {
     config: {
@@ -120,7 +120,7 @@ export default class ApiService {
     ],
   }
 
-  static async request(method, endpoint, data = null) {
+  static async mockRequest(method, endpoint, data = null) {
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 300))
 
@@ -129,6 +129,55 @@ export default class ApiService {
     } catch (error) {
       throw new Error(error.message || "API request failed")
     }
+  }
+  
+  static async request(method, endpoint, data = undefined, queryParams = {}) {
+    const urlSearchParams = new URLSearchParams(queryParams);
+    const url = `${window.location.origin}/api${endpoint}?${urlSearchParams.toString()}`
+
+
+    if (method.toString().toLowerCase() === "get" && data) {
+      throw new Error("GET request cannot include a body")
+    }
+
+    try {
+      return fetch(url, {
+        method: method,
+        headers: {
+          "Content-Type": "application/json",
+          ...(AuthService.getAuthToken() && { "Authorization": "Bearer " + AuthService.getAuthToken() })
+        },
+        body: JSON.stringify(data),
+      })
+    } catch (error) {
+      throw new Error(error.message || "API request failed")
+    }
+  }
+
+  static async register(username, password) {
+    const response = await this.request("POST", "/auth/register", {
+      username: username,
+      password: password,
+    })
+
+    return [await response.json(), response.ok];
+  }
+
+  static async verifyTwoFactor(username, code) {
+    const response = await this.request("POST", "/auth/verify-2fa", {
+      username: username,
+      code: code,
+    })
+    return [await response.json(), response.ok];
+  }
+
+  static async login(username, password, totpCode) {
+    const response = await this.request("POST", "/auth/login", {
+      username: username,
+      password: password,
+      totpCode: totpCode,
+    })
+    return [await response.json(), response.ok];
   }
 
   static handleMockRequest(method, endpoint, data) {
@@ -518,19 +567,27 @@ export default class ApiService {
   }
 
   // API methods
-  static async get(endpoint) {
-    return this.request("GET", endpoint)
+  static async mockGet(endpoint) {
+    return this.mockRequest("GET", endpoint)
   }
 
-  static async post(endpoint, data) {
-    return this.request("POST", endpoint, data)
+  static async get(endpoint, queryParams = {}) {
+    return this.request("GET", endpoint, undefined, queryParams)
+  }
+
+  static async mockPost(endpoint, data) {
+    return this.mockRequest("POST", endpoint, data)
+  }
+
+  static async post(endpoint, data, queryParams = {}) {
+    return this.request("POST", endpoint, data, queryParams)
   }
 
   static async put(endpoint, data) {
-    return this.request("PUT", endpoint, data)
+    return this.mockRequest("PUT", endpoint, data)
   }
 
   static async delete(endpoint) {
-    return this.request("DELETE", endpoint)
+    return this.mockRequest("DELETE", endpoint)
   }
 }
