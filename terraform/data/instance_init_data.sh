@@ -6,7 +6,7 @@ yum update -y
 amazon-linux-extras enable corretto21
 yum install -y java-21-amazon-corretto
 
-APP_DIR="/home/ec2-user/team_one"
+APP_DIR="/home/ec2-user/team_one/target"
 JAR_NAME="todo-0.0.1-app.jar"
 
 
