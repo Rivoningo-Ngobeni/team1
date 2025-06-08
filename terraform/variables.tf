@@ -74,7 +74,7 @@ variable "budget_limit" {
 }
 
 variable "alert_thresholds" {
-  default = [20, 30, 40, 50, 60, 70, 80, 90, 100]
+  default = [30, 40, 50, 60, 70, 80, 90, 100]
 }
 
 variable "alert_emails" {
