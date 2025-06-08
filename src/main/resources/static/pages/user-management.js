@@ -40,13 +40,15 @@ export default class UserManagementPage {
                     <h1 class="page-title">User Management</h1>
                     <p class="page-subtitle">Manage system users and their roles</p>
                 </div>
-                <div>
-                    <button type="button" class="btn btn-primary" id="create-user-btn">
-                        <span aria-hidden="true">+</span> Create User
-                    </button>
-                </div>
             </div>
         `
+
+//                <div>
+//                    <button type="button" class="btn btn-primary" id="create-user-btn">
+//                        <span aria-hidden="true">+</span> Create User
+//                    </button>
+//                </div>
+
 
     // Main content area
     const main = document.createElement("main")
@@ -75,12 +77,12 @@ export default class UserManagementPage {
     app.appendChild(layout)
 
     // Setup event listeners
-    const createUserBtn = document.getElementById("create-user-btn")
+//    const createUserBtn = document.getElementById("create-user-btn")
     const searchInput = document.getElementById("search-input")
 
-    createUserBtn.addEventListener("click", () => {
-      this.showCreateUserForm()
-    })
+//    createUserBtn.addEventListener("click", () => {
+//      this.showCreateUserForm()
+//    })
 
     searchInput.addEventListener("input", (e) => {
       this.filterUsers(e.target.value)
@@ -96,12 +98,11 @@ export default class UserManagementPage {
       '<div style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading users...</div>'
 
     try {
-      const response = await ApiService.get("/users")
-      if (response.success) {
-        this.allUsers = response.data
-        this.renderUsers(response.data)
-      }
+      const response = await ApiService.get("/full-users")
+        this.allUsers = response
+        this.renderUsers(this.allUsers)
     } catch (error) {
+    console.log(error)
       container.innerHTML =
         '<div style="text-align: center; padding: 2rem; color: var(--error-color);">Failed to load users</div>'
       ToastService.show("Failed to load users", "error")
@@ -140,7 +141,7 @@ export default class UserManagementPage {
       row.className = "table-row"
       row.style.gridTemplateColumns = "1fr 1fr 1fr auto"
 
-      const roles = user.system_roles
+      const roles = user.systemRoles
         .map(
           (role) =>
             `<span class="badge badge-primary">${SecurityUtils.sanitizeText(role)}</span>`
@@ -156,7 +157,7 @@ export default class UserManagementPage {
           </div>
           <div class="table-cell" data-label="Created">
             <span class="text-secondary text-sm">
-              ${SecurityUtils.sanitizeText(new Date(user.created_at).toLocaleDateString())}
+              ${SecurityUtils.sanitizeText(new Date(user.createdAt).toLocaleDateString())}
             </span>
           </div>
           <div class="table-cell" data-label="Actions">
@@ -254,12 +255,12 @@ export default class UserManagementPage {
             <div class="flex flex-col gap-2">
               <label class="flex items-center gap-2">
                 <input type="checkbox" id="role-admin" class="form-checkbox" 
-                    ${isEdit && user.system_roles.includes("system_admin") ? "checked" : ""}>
+                    ${isEdit && user.systemRoles.includes("system_admin") ? "checked" : ""}>
                 <span>System Admin</span>
               </label>
               <label class="flex items-center gap-2">
                 <input type="checkbox" id="role-user" class="form-checkbox" 
-                    ${isEdit && user.system_roles.includes("todo_user") ? "checked" : ""}>
+                    ${isEdit && user.systemRoles.includes("todo_user") ? "checked" : ""}>
                 <span>Todo User</span>
               </label>
             </div>
@@ -273,7 +274,7 @@ export default class UserManagementPage {
         </button>
       </div>
     `
-
+    modal.appendChild(form)
     document.body.appendChild(modal)
 
     // Add event listeners
@@ -334,30 +335,19 @@ export default class UserManagementPage {
 
       try {
         const userData = {
-          username: username,
-          system_roles: roles,
+          roleNames: roles,
         }
-
         if (!isEdit) {
           userData.password = password
         }
 
         let response
         if (isEdit) {
-          response = await ApiService.put(`/users/${user.id}`, userData)
-        } else {
-          response = await ApiService.post("/users", userData)
+          response = await ApiService.patch(`/user-roles/${user.id}`, userData.roleNames)
         }
-
-        if (response.success) {
           ToastService.show(`User ${isEdit ? "updated" : "created"} successfully`, "success")
           document.body.removeChild(modal)
           this.loadUsers()
-        } else {
-          ToastService.show(response.message || `Failed to ${isEdit ? "update" : "create"} user`, "error")
-          saveBtn.disabled = false
-          saveBtn.textContent = isEdit ? "Save Changes" : "Create User"
-        }
       } catch (error) {
         ToastService.show(`An error occurred: ${error.message}`, "error")
         saveBtn.disabled = false
@@ -417,17 +407,11 @@ export default class UserManagementPage {
 
       try {
         const response = await ApiService.delete(`/users/${userId}`)
-        if (response.success) {
           ToastService.show("User deleted successfully", "success")
           document.body.removeChild(modal)
           this.loadUsers()
-        } else {
-          ToastService.show(response.message || "Failed to delete user", "error")
-          deleteBtn.disabled = false
-          deleteBtn.textContent = "Delete User"
-        }
       } catch (error) {
-        ToastService.show(`An error occurred: ${error.message}`, "error")
+        ToastService.show(`An error occurred: deleting user`, "error")
         deleteBtn.disabled = false
         deleteBtn.textContent = "Delete User"
       }

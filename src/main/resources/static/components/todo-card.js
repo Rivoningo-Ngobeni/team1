@@ -37,14 +37,8 @@ class TodoCard extends BaseComponent {
       closed: "var(--success-color)",
     }
 
-    const statusLabels = {
-      open: "Open",
-      in_progress: "In Progress",
-      closed: "Completed",
-    }
-
-    const dueDate = this.todo.due_date ? new Date(this.todo.due_date) : null
-    const isOverdue = dueDate && dueDate < new Date() && this.todo.status_name !== "closed"
+    const dueDate = this.todo.dueDate ? new Date(this.todo.dueDate) : null
+    const isOverdue = dueDate && dueDate < new Date() && this.todo.status.name !== "closed"
 
     this.shadowRoot.innerHTML = `
             <style>
@@ -314,9 +308,9 @@ class TodoCard extends BaseComponent {
                     <h3 id="todo-title-${this.todo.id}" class="todo-title">
                         ${SecurityUtils.sanitizeText(this.todo.title)}
                     </h3>
-                    <div class="todo-status" role="status" aria-label="Task status: ${statusLabels[this.todo.status_name]}">
+                    <div class="todo-status" role="status" aria-label="Task status: ${this.todo.status.name}">
                         <span class="status-dot" aria-hidden="true"></span>
-                        ${statusLabels[this.todo.status_name]}
+                        ${this.todo.status.name}
                     </div>
                 </header>
                 
@@ -326,7 +320,7 @@ class TodoCard extends BaseComponent {
                 
                 <div class="todo-meta">
                     <div>
-                        Assigned to: <span class="todo-assignee">${SecurityUtils.sanitizeText(this.todo.assigned_to_username || "Unassigned")}</span>
+                        Assigned to: <span class="todo-assignee">${SecurityUtils.sanitizeText(this.todo.assignedTo?.username || "Unassigned")}</span>
                     </div>
                     ${
                       dueDate
@@ -340,13 +334,12 @@ class TodoCard extends BaseComponent {
                         : ""
                     }
                 </div>
-                
                 ${
                   canEdit
                     ? `<footer class="todo-actions">
                         <button class="action-btn primary ${this.todo.status_name}" 
                                 data-action="toggle-status" 
-                                aria-label="Change status to ${statusMap[this.todo.status_name] || "next status"}">
+                                aria-label="Change status to ${this.todo.status.name || "next status"}">
                             ${this.getStatusButtonText()}
                         </button>
                         <button class="action-btn" 
@@ -394,7 +387,7 @@ class TodoCard extends BaseComponent {
         "text/plain",
         JSON.stringify({
           todoId: this.todo.id,
-          currentStatus: this.todo.status_name,
+          currentStatus: this.todo.status.name,
         }),
       )
 
@@ -407,7 +400,7 @@ class TodoCard extends BaseComponent {
 
       setTimeout(() => document.body.removeChild(dragImage), 0)
 
-      this.emit("drag-start", { todoId: this.todo.id, status: this.todo.status_name })
+      this.emit("drag-start", { todoId: this.todo.id, status: this.todo.status.name })
     })
 
     card.addEventListener("dragend", (e) => {
@@ -438,7 +431,7 @@ class TodoCard extends BaseComponent {
           this.keyboardMode = !this.keyboardMode
           if (this.keyboardMode) {
             card.setAttribute("aria-grabbed", "true")
-            this.emit("keyboard-select", { todoId: this.todo.id, status: this.todo.status_name })
+            this.emit("keyboard-select", { todoId: this.todo.id, status: this.todo.status.name })
           } else {
             card.setAttribute("aria-grabbed", "false")
             this.emit("keyboard-deselect", { todoId: this.todo.id })
@@ -454,7 +447,7 @@ class TodoCard extends BaseComponent {
             this.emit("keyboard-move", {
               todoId: this.todo.id,
               direction: e.key.replace("Arrow", "").toLowerCase(),
-              currentStatus: this.todo.status_name,
+              currentStatus: this.todo.status.name,
             })
           }
           break
@@ -514,7 +507,7 @@ class TodoCard extends BaseComponent {
   }
 
   getStatusButtonText() {
-    return statusMap[this.todo.status_name] || "Update Status"
+    return statusMap[this.todo.status.name] || "Update Status"
   }
 
   setKeyboardMode(enabled) {

@@ -1,6 +1,8 @@
 package com.team1.todo.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,6 +22,7 @@ public class Todo {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_to_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private User assignedTo;
 
     @ManyToOne(fetch = FetchType.LAZY)

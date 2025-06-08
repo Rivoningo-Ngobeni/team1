@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/todos")
+@RequestMapping("/api/full-todos")
 public class TodoController {
 
     private final TodoRepository todoRepository;

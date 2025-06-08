@@ -8,7 +8,7 @@ class AppInput extends BaseComponent {
   constructor() {
     super()
     this.attachShadow({ mode: "open" })
-    this.value = ""
+    //this.value = ""
   }
 
   mount() {

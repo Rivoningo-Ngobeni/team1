@@ -11,6 +11,8 @@ class TeamManagementPage {
   static async render(teamId) {
     this.currentTeam = teamId ? Number.parseInt(teamId) : null
 
+    console.log(teamId)
+
     if (!this.currentTeam) {
       Router.navigate("/teams")
       return
@@ -18,6 +20,7 @@ class TeamManagementPage {
 
     // Check permissions
     const canManage = await PermissionService.canManageTeam(this.currentTeam)
+    // add '!' to canManage
     if (!canManage) {
       Router.navigate("/teams")
       ToastService.show("Access denied", "error")
@@ -66,15 +69,16 @@ class TeamManagementPage {
     app.appendChild(layout)
 
     // Setup event listeners
+
     const addMemberBtn = actions.querySelector('#add-member-btn')
     const backBtn = actions.querySelector('#back-btn')
 
-    addMemberBtn.addEventListener("click", () => {
-      this.showAddMemberForm()
-    })
-
-    backBtn.addEventListener("click", () => {
-      Router.navigate("/teams")
+    actions.addEventListener("click", (e) => {
+      if (e.target.closest("#add-member-btn")) {
+        this.showAddMemberForm()
+      } else if (e.target.closest("#back-btn")) {
+        Router.navigate("/teams")
+      }
     })
 
     // Load team members
@@ -90,10 +94,8 @@ class TeamManagementPage {
       '<div style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading team members...</div>'
 
     try {
-      const response = await ApiService.get(`/teams/${this.currentTeam}/members`)
-      if (response.success) {
-        this.renderTeamMembers(response.data)
-      }
+      const response = await ApiService.get(`/teaminfo/${this.currentTeam}/members`)
+        this.renderTeamMembers(response)
     } catch (error) {
       container.innerHTML =
         '<div style="text-align: center; padding: 2rem; color: var(--error-color);">Failed to load team members</div>'
@@ -134,7 +136,7 @@ class TeamManagementPage {
       row.classList.add("table-row")
       row.style.gridTemplateColumns = "1fr 1fr 1fr auto";
 
-      const roleColor = member.team_role_name === "team_lead" ? "var(--warning-color)" : "var(--primary-color)"
+      const roleColor = member.roleName === "team_lead" ? "var(--warning-color)" : "var(--primary-color)"
 
       row.innerHTML = `
                 <div class="table-cell" data-label="Username">
@@ -148,7 +150,7 @@ class TeamManagementPage {
                         border-radius: 9999px;
                         font-size: 0.75rem;
                         text-transform: capitalize;
-                    ">${SecurityUtils.sanitizeText(member.team_role_name.replace("_", " "))}</span>
+                    ">${SecurityUtils.sanitizeText(member.roleName.replace("_", " "))}</span>
                 </div>
                 <div class="table-cell" data-label="Joined">
                     <span style="color: var(--text-secondary); font-size: 0.875rem;">
@@ -159,12 +161,12 @@ class TeamManagementPage {
                     <div class="flex gap-2">
                         <button class="standard-button" 
                                 data-action="change-role" 
-                                data-user-id="${member.user_id}">Change Role</button>
+                                data-user-id="${member.userId}">Change Role</button>
                         ${
-                          member.user_id !== currentUser?.id
+                          member.userId !== currentUser?.id
                             ? `<button class="danger-button" 
                                 data-action="remove" 
-                                data-user-id="${member.user_id}">Remove</button>`
+                                data-user-id="${member.userId}">Remove</button>`
                             : ""
                         }
                     </div>
@@ -206,7 +208,7 @@ class TeamManagementPage {
   }
 
   static showAddMemberForm() {
-    console.log("Showing add member form");
+    removeModal()
     
     const modal = document.createElement("div")
     modal.id = "add-member-modal";
@@ -230,8 +232,8 @@ class TeamManagementPage {
                 <div class="form-group">
                     <label class="form-label" for="role-select">Role</label>
                     <select id="role-select" class="standard-input" required>
-                        <option value="2">Team Member</option>
-                        <option value="1">Team Lead</option>
+                        <option value="team_member">Team Member</option>
+                        <option value="team_lead">Team Lead</option>
                     </select>
                 </div>
             </div>
@@ -274,9 +276,9 @@ class TeamManagementPage {
         const roleSelect = form.querySelector("#role-select");
         
         const username = usernameInput ? usernameInput.value.trim() : "";
-        const roleId = roleSelect ? Number.parseInt(roleSelect.value) : null;
+        const roleName = roleSelect ? roleSelect.value : null;
 
-        if (!username || !roleId) {
+        if (!username || !roleName) {
           ToastService.show("Please fill in all fields", "error")
           return;
         }
@@ -285,23 +287,16 @@ class TeamManagementPage {
         submitBtn.disabled = true;
 
         try {
-          console.log(`Adding team member: ${username} with role ${roleId} to team ${this.currentTeam}`);
-          const response = await ApiService.post(`/teams/${this.currentTeam}/members`, {
+          console.log(`Adding team member: ${username} with role ${roleName} to team ${this.currentTeam}`);
+          const response = await ApiService.post(`/teaminfo/${this.currentTeam}/add-member`, {
             username,
-            team_role_id: roleId,
+            roleName,
           })
 
-          if (response.success) {
             console.log("Team member added successfully");
             ToastService.show("Team member added successfully", "success");
             removeModal();
             await TeamManagementPage.loadTeamMembers();
-          } else {
-            console.error("Failed to add team member:", response);
-            ToastService.show(response.message || "Failed to add team member", "error");
-            submitBtn.textContent = "Add Member";
-            submitBtn.disabled = false;
-          }
         } catch (error) {
           console.error("Error adding team member:", error);
           ToastService.show("Failed to add team member", "error");
@@ -339,8 +334,8 @@ class TeamManagementPage {
                 <div class="form-group">
                     <label class="form-label" for="role-select">New Role</label>
                     <select id="role-select" class="standard-input" required>
-                        <option value="2">Team Member</option>
-                        <option value="1">Team Lead</option>
+                        <option value="team_member">Team Member</option>
+                        <option value="team_lead">Team Lead</option>
                     </select>
                 </div>
             </div>
@@ -374,9 +369,9 @@ class TeamManagementPage {
     if (submitBtn) {
       submitBtn.addEventListener("click", async () => {
         const roleSelect = form.querySelector("#role-select");
-        const roleId = roleSelect ? Number.parseInt(roleSelect.value) : null;
+        const roleName = roleSelect ? roleSelect.value : null;
 
-        if (!roleId) {
+        if (!roleName) {
           ToastService.show("Please select a role", "error");
           return;
         }
@@ -385,22 +380,16 @@ class TeamManagementPage {
         submitBtn.disabled = true;
 
         try {
-          console.log(`Updating role to ${roleId} for user ${userId} in team ${this.currentTeam}`);
-          const response = await ApiService.put(`/teams/${this.currentTeam}/members/${userId}`, {
-            team_role_id: roleId,
+          console.log(`Updating role to ${roleName} for user ${userId} in team ${this.currentTeam}`);
+          const response = await ApiService.put(`/teaminfo/${this.currentTeam}/update-role`, {
+            roleName,
+            userId
           })
 
-          if (response.success) {
             console.log("Member role updated successfully");
             ToastService.show("Member role updated successfully", "success");
             removeModal();
             await TeamManagementPage.loadTeamMembers();
-          } else {
-            console.error("Failed to update member role:", response);
-            ToastService.show(response.message || "Failed to update member role", "error");
-            submitBtn.textContent = "Update Role";
-            submitBtn.disabled = false;
-          }
         } catch (error) {
           console.error("Error updating member role:", error);
           ToastService.show("Failed to update member role", "error");
@@ -475,19 +464,12 @@ class TeamManagementPage {
 
         try {
           console.log(`Removing user ${userId} from team ${this.currentTeam}`);
-          const response = await ApiService.delete(`/teams/${this.currentTeam}/members/${userId}`);
-          
-          if (response.success) {
+          const response = await ApiService.delete(`/teaminfo/${this.currentTeam}/members/${userId}`);
+
             console.log("Team member removed successfully");
             removeModal();
             ToastService.show("Team member removed successfully", "success");
             await TeamManagementPage.loadTeamMembers();
-          } else {
-            console.error("Failed to remove team member:", response);
-            ToastService.show(response.message || "Failed to remove team member", "error");
-            confirmBtn.textContent = "Remove Member";
-            confirmBtn.disabled = false;
-          }
         } catch (error) {
           console.error("Error removing team member:", error);
           ToastService.show("Failed to remove team member", "error");

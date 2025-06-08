@@ -1,8 +1,12 @@
 package com.team1.todo.repository;
 
+import com.team1.todo.entity.SystemRole;
 import com.team1.todo.entity.UserSystemRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
+import java.util.Optional;
+
 @RepositoryRestResource
-public interface UserSystemRoleRepository extends JpaRepository<UserSystemRole, Long> {}
+public interface UserSystemRoleRepository extends JpaRepository<UserSystemRole, Long> {
+}

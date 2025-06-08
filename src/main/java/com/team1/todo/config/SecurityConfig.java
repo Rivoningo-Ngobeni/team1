@@ -4,6 +4,7 @@ import com.team1.todo.service.UserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -53,21 +54,21 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http.csrf(AbstractHttpConfigurer::disable)
-//                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/api/auth/register").permitAll()
-//                                .requestMatchers("/api/auth/login").permitAll()
-//                                .requestMatchers("/api/auth/setup-2fa").permitAll()
-//                                .requestMatchers("/api/auth/verify-2fa").permitAll()
-//                                .requestMatchers("/api/auth/reset-2fa").authenticated()
-//                        .requestMatchers("/api/admin/**").hasRole("SYSTEM_ADMIN")
-//                        .requestMatchers("/api/team-lead/**").hasAnyRole("SYSTEM_ADMIN", "TEAM_LEAD")
-//                        .anyRequest().authenticated()
-//                )
-//                .authenticationProvider(authenticationProvider());
-//                http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        http.csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/register").permitAll()
+                                .requestMatchers("/api/auth/login").permitAll()
+                                .requestMatchers("/api/auth/setup-2fa").permitAll()
+                                .requestMatchers("/api/auth/verify-2fa").permitAll()
+                                .requestMatchers("/api/auth/reset-2fa").authenticated()
+                        .requestMatchers("/api/admin/**").hasRole("SYSTEM_ADMIN")
+                        .requestMatchers("/api/team-lead/**").hasAnyRole("SYSTEM_ADMIN", "TEAM_LEAD")
+                        .anyRequest().authenticated() ///  change to permitAll if testing without auth
+                )
+                .authenticationProvider(authenticationProvider());
+                http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
