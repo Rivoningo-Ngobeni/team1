@@ -52,11 +52,12 @@ jobs:
             
             echo "--- Writing environment variables to .env ---"
             cat <<EOF > "$APP_DIR/.env"
-            DB_HOST=${{ vars.DB_HOST }}
-            DB_PORT=${{ vars.DB_PORT }}
-            DB_USER=${{ vars.DB_USER }}
-            DB_NAME=${{ vars.DB_NAME }}
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            SPRING_DATASOURCE_URL=${{ vars.DB_HOST }}:${{ vars.DB_PORT }}/${{ vars.DB_NAME }}
+            SPRING_DATASOURCE_USERNAME=${{ vars.DB_USER }}
+            SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }}
+            SPRING_APPLICATION_NAME=${{vars.APPLICATION_NAME}}
+            SPRING_DATA_REST_BASE_PATH=${{vars.REST_BASE_PATH}}
+            API_BASEURL=${{vars.EC2_HOST}}/${{REST_BASE_PATH}}
             EOF
             
             echo "--- Creating systemd service for $SERVICE_NAME ---"
