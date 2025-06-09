@@ -44,8 +44,8 @@ jobs:
             SERVICE_NAME="team_one"
             
             echo "--- Preparing Java App in $APP_DIR ---"
-            mkdir -p "$APP_DIR"
-            cd "$APP_DIR"
+            mkdir -p "$APP_DIR/target"
+            cd "$APP_DIR/target"
             
             echo "--- Installing Java 21 (Amazon Corretto) ---"
             sudo dnf install -y java-21-amazon-corretto
