@@ -3,6 +3,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -34,6 +35,9 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthFilter jwtAuthFilter;
 
+    @Value("${app.cors.allowedOrigins}")
+    private List<String> allowedOrigins;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
@@ -58,13 +62,11 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/register").permitAll()
-                                .requestMatchers("/api/auth/login").permitAll()
-                                .requestMatchers("/api/auth/setup-2fa").permitAll()
-                                .requestMatchers("/api/auth/verify-2fa").permitAll()
-                                .requestMatchers("/api/auth/reset-2fa").authenticated()
-                        .requestMatchers("/api/admin/**").hasRole("SYSTEM_ADMIN")
-                        .requestMatchers("/api/team-lead/**").hasAnyRole("SYSTEM_ADMIN", "TEAM_LEAD")
+                        .requestMatchers("/api/auth/register",
+                                "/api/auth/login",
+                                "/api/auth/setup-2fa",
+                                "/api/auth/verify-2fa").permitAll()
+                        .requestMatchers("/api/auth/reset-2fa").authenticated()
                         .requestMatchers(
                                 "/",
                                 "/index.html",
@@ -90,7 +92,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*")); // add our domain
+        configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization",
                 "Content-Type",
