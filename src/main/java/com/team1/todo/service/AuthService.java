@@ -1,8 +1,12 @@
 package com.team1.todo.service;
 
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -11,21 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.team1.todo.entity.PublicUser;
 import com.team1.todo.entity.User;
-import com.team1.todo.repository.SystemRoleRepository;
 import com.team1.todo.repository.UserRepository;
-import com.team1.todo.repository.UserSystemRoleRepository;
 import com.team1.todo.security.JwtUtil;
 
 @Service
 public class AuthService {
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private SystemRoleRepository systemRoleRepository;
-
-    @Autowired
-    private UserSystemRoleRepository userSystemRoleRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -41,72 +37,236 @@ public class AuthService {
 
     private static final SecureRandom secureRandom = new SecureRandom();
 
+    // Rate limiting
+    private final ConcurrentHashMap<String, AttemptCounter> loginAttempts = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, AttemptCounter> twoFaAttempts = new ConcurrentHashMap<>();
+
+    private static final int MAX_LOGIN_ATTEMPTS = 3;
+    private static final int MAX_2FA_ATTEMPTS = 3;
+    private static final int LOCKOUT_DURATION_MINUTES = 10;
+    private static final int SECURITY_DELAY_MS = 1000; // Constant time delay
+
+    // Input validation patterns
+    private static final Pattern TOTP_PATTERN = Pattern.compile("^[0-9]{6}$");
+    private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9._-]{3,50}$");
+    private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$");
+
     @Transactional
     public User registerUser(String username, String password, String roleName) {
-        if (userRepository.findByUsername(username).isPresent()) {
-            throw new RuntimeException("User already exists with username: " + username);
+        if (!isValidUsername(username)) {
+            throw new SecurityException("Invalid username format");
         }
 
-        String salt = generateSalt();
+        if (!isValidPassword(password)) {
+            throw new SecurityException("Password does not meet security requirements");
+        }
 
-        String totpSecret = totpService.generateSecret();
+        username = username.toLowerCase().trim();
 
-        // Create user with 2FA secret (required by schema)
-        User user = new User();
-        user.setUsername(username);
-        user.setPasswordSalt(salt);
-        user.setPasswordHash(passwordEncoder.encode(password + salt));
-        user.setTwoFaSecret(totpSecret);
+        if (userRepository.findByUsername(username).isPresent()) {
+            throw new SecurityException("Registration failed");
+        }
 
-        return userService.createUserWithDefaultSystemRole(user);
+        try {
+
+            String salt = generateSalt();
+            String totpSecret = totpService.generateSecret();
+
+            User user = new User();
+            user.setUsername(username);
+            user.setPasswordSalt(salt);
+            user.setPasswordHash(passwordEncoder.encode(password));
+            user.setTwoFaSecret(totpSecret);
+
+            return userService.createUserWithDefaultSystemRole(user);
+
+        } catch (Exception e) {
+            throw new SecurityException("Registration failed");
+        }
     }
 
     public AuthenticationResponse authenticate(String username, String password, String totpCode) {
+        long startTime = System.currentTimeMillis();
+
+        try {
+            return performAuthentication(username, password, totpCode);
+        } finally {
+
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            if (elapsedTime < SECURITY_DELAY_MS) {
+                try {
+                    Thread.sleep(SECURITY_DELAY_MS - elapsedTime);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+    }
+
+    public AuthenticationResponse performAuthentication(String username, String password, String totpCode) {
+        if (!isValidInput(username, password, totpCode)) {
+            incrementLoginAttempts(username);
+            throw new SecurityException("Authentication failed");
+        }
+        username = username.toLowerCase().trim();
+
+        if (isRateLimited(username)) {
+            throw new SecurityException("Authentication failed - too many attempts");
+        }
         Optional<User> userOpt = userRepository.findByUsername(username);
+        boolean userExists = userOpt.isPresent();
+        boolean passwordValid = false;
+        boolean totpValid = false;
 
-        if (userOpt.isEmpty()) {
-            throw new RuntimeException("Invalid credentials");
+        if (userExists) {
+            User user = userOpt.get();
+
+            try {
+                passwordValid = passwordEncoder.matches(password, user.getPasswordHash());
+            } catch (Exception e) {
+                passwordValid = false;
+            }
+
+            if (passwordValid) {
+                if (user.getTwoFaSecret() != null && !user.getTwoFaSecret().isEmpty()) {
+                    if (isValidTotpCode(totpCode) && !is2FARateLimited(username)) {
+                        if (totpService.verifyCode(user.getTwoFaSecret(), totpCode)) {
+                            totpValid = true;
+                        } else {
+                            increment2FAAttempts(username);
+                        }
+                    } else if (is2FARateLimited(username)) {
+                        throw new SecurityException("Authentication failed - too many 2FA attempts");
+                    }
+                }
+            }
+        } else {
+            passwordEncoder.matches("dummy", "$2a$12$dummy.hash.to.prevent.timing.attacks");
         }
 
-        User user = userOpt.get();
+        if (userExists && passwordValid && totpValid) {
+            User user = userOpt.get();
+            String token = jwtUtil.generateToken(user);
+            loginAttempts.remove(username);
+            twoFaAttempts.remove(username);
 
-        // Validate password
-        String hashedInputPassword = passwordEncoder.encode(password + user.getPasswordSalt());
-        if (!passwordEncoder.matches(password + user.getPasswordSalt(), user.getPasswordHash())) {
-            throw new RuntimeException("Invalid credentials");
+            return new AuthenticationResponse(token, true, true, user.getPrimaryRole(), user);
+        } else {
+            incrementLoginAttempts(username);
+            throw new SecurityException("Authentication failed");
         }
+    }
 
-        // Check if user has 2FA secret
-        if (user.getTwoFaSecret() == null || user.getTwoFaSecret().isEmpty()) {
-            throw new RuntimeException("2FA not set up for this user");
+    // Rate limiting methods
+    private boolean isRateLimited(String username) {
+        AttemptCounter counter = loginAttempts.get(username);
+        if (counter == null) {
+            return false;
         }
-
-        // Validate TOTP code if provided
-        if (totpCode == null || totpCode.isEmpty()) {
-            throw new RuntimeException("2FA code is required");
+        if (counter.isExpired()) {
+            loginAttempts.remove(username);
+            return false;
         }
+        return counter.getAttempts() >= MAX_LOGIN_ATTEMPTS;
+    }
 
-        if (!totpService.verifyCode(user.getTwoFaSecret(), totpCode)) {
-            throw new RuntimeException("Invalid 2FA code");
+    private boolean is2FARateLimited(String username) {
+        AttemptCounter counter = twoFaAttempts.get(username);
+        if (counter == null) {
+            return false;
         }
+        if (counter.isExpired()) {
+            twoFaAttempts.remove(username);
+            return false;
+        }
+        return counter.getAttempts() >= MAX_2FA_ATTEMPTS;
+    }
 
-        String token = jwtUtil.generateToken(user);
-        return new AuthenticationResponse(token, true, true, user.getPrimaryRole(), user);
+    // Validation methods
+    private boolean isValidUsername(String username) {
+        return username != null && USERNAME_PATTERN.matcher(username).matches();
+    }
+
+    private boolean isValidPassword(String password) {
+        return password != null && PASSWORD_PATTERN.matcher(password).matches();
+    }
+
+    private boolean isValidTotpCode(String totpCode) {
+        return totpCode != null && TOTP_PATTERN.matcher(totpCode).matches();
+    }
+
+    private boolean isValidInput(String username, String password, String totpCode) {
+        return isValidUsername(username) &&
+                isValidPassword(password) &&
+                isValidTotpCode(totpCode);
+    }
+
+    private void incrementLoginAttempts(String username) {
+        loginAttempts.compute(username, (key, counter) -> {
+            if (counter == null || counter.isExpired()) {
+                return new AttemptCounter();
+            } else {
+                counter.increment();
+                return counter;
+            }
+        });
+    }
+
+    private void increment2FAAttempts(String username) {
+        twoFaAttempts.compute(username, (key, counter) -> {
+            if (counter == null || counter.isExpired()) {
+                return new AttemptCounter();
+            } else {
+                counter.increment();
+                return counter;
+            }
+        });
     }
 
     public String setup2FA(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (!isValidUsername(username)) {
+            throw new SecurityException("Invalid username format");
+        }
+        username = username.toLowerCase().trim();
 
-        // User already has a secret from registration, return QR code URL
-        return totpService.generateQrCodeUrl(user.getTwoFaSecret(), username);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new SecurityException("User not found"));
+
+        try {
+            return totpService.generateQrCodeUrl(user.getTwoFaSecret(), username);
+        } catch (Exception e) {
+            throw new SecurityException("2FA setup failed: " + e.getMessage());
+        }
+
     }
 
     public boolean verify2FA(String username, String totpCode) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (!isValidUsername(username) || !isValidTotpCode(totpCode)) {
+            return false;
+        }
 
-        return totpService.verifyCode(user.getTwoFaSecret(), totpCode);
+        username = username.toLowerCase().trim();
+
+        if (is2FARateLimited(username)) {
+            return false;
+        }
+
+        try {
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new SecurityException("Verification failed"));
+
+            boolean isValid = totpService.verifyCode(user.getTwoFaSecret(), totpCode);
+
+            if (!isValid) {
+                increment2FAAttempts(username);
+            }
+
+            return isValid;
+
+        } catch (Exception e) {
+            increment2FAAttempts(username);
+            return false;
+        }
     }
 
     @Transactional
@@ -123,6 +283,25 @@ public class AuthService {
         secureRandom.nextBytes(salt);
         return Base64.getEncoder().encodeToString(salt);
     }
+
+    // Rate limiting helper class
+    private static class AttemptCounter {
+        private final AtomicInteger attempts = new AtomicInteger(1);
+        private final LocalDateTime timestamp = LocalDateTime.now();
+
+        public void increment() {
+            attempts.incrementAndGet();
+        }
+
+        public int getAttempts() {
+            return attempts.get();
+        }
+
+        public boolean isExpired() {
+            return timestamp.isBefore(LocalDateTime.now().minusMinutes(LOCKOUT_DURATION_MINUTES));
+        }
+    }
+
 
 
     public static class AuthenticationResponse {
