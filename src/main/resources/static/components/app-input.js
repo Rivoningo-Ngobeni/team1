@@ -1,33 +1,38 @@
-import BaseComponent from "./base-component.js"
+import BaseComponent from "./base-component.js";
+import SecurityUtils from "../utils/security.js";
 
 class AppInput extends BaseComponent {
   static get observedAttributes() {
-    return ["type", "placeholder", "value", "required", "disabled", "readonly"]
+    return ["type", "placeholder", "value", "required", "disabled", "readonly"];
   }
 
   constructor() {
-    super()
-    this.attachShadow({ mode: "open" })
+    super();
+    this.attachShadow({ mode: "open" });
     //this.value = ""
   }
 
   mount() {
-    this.render()
-    this.setupEventListeners()
+    this.render();
+    this.setupEventListeners();
 
     // Register for form-associated custom elements
-    if (this.attachInternals && typeof this.attachInternals === 'function') {
-      this.internals = this.attachInternals()
+    if (this.attachInternals && typeof this.attachInternals === "function") {
+      this.internals = this.attachInternals();
     }
   }
 
   render() {
-    const type = this.getAttribute("type") || "text"
-    const placeholder = this.getAttribute("placeholder") || ""
-    const value = this.getAttribute("value") || ""
-    const required = this.hasAttribute("required")
-    const disabled = this.hasAttribute("disabled")
-    const readonly = this.hasAttribute("readonly")
+    const type = SecurityUtils.sanitizeText(
+      this.getAttribute("type") || "text"
+    );
+    const placeholder = SecurityUtils.sanitizeText(
+      this.getAttribute("placeholder") || ""
+    );
+    const value = SecurityUtils.sanitizeText(this.getAttribute("value") || "");
+    const required = this.hasAttribute("required");
+    const disabled = this.hasAttribute("disabled");
+    const readonly = this.hasAttribute("readonly");
 
     this.shadowRoot.innerHTML = `
       <style>
@@ -127,150 +132,155 @@ class AppInput extends BaseComponent {
           aria-invalid="false"
         />
       </div>
-    `
+    `;
   }
 
   setupEventListeners() {
-    const input = this.$(".input")
+    const input = this.$(".input");
     if (!input) return;
 
     // Use direct event listeners instead of this.addEventListener wrapper
     input.addEventListener("input", (e) => {
-      this.value = e.target.value
-      this.emit("input", { value: this.value })
-      
+      this.value = e.target.value;
+      this.emit("input", { value: this.value });
+
       // Dispatch native input event to support form validation
-      this.dispatchEvent(new Event("input", { bubbles: true, composed: true }))
-    })
+      this.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    });
 
     input.addEventListener("change", (e) => {
-      this.value = e.target.value
-      this.emit("change", { value: this.value })
-      
+      this.value = e.target.value;
+      this.emit("change", { value: this.value });
+
       // Dispatch native change event
-      this.dispatchEvent(new Event("change", { bubbles: true, composed: true }))
-    })
+      this.dispatchEvent(
+        new Event("change", { bubbles: true, composed: true })
+      );
+    });
 
     input.addEventListener("focus", (e) => {
-      this.emit("focus", { value: this.value })
-    })
+      this.emit("focus", { value: this.value });
+    });
 
     input.addEventListener("blur", (e) => {
-      this.emit("blur", { value: this.value })
-      this.validate()
-    })
+      this.emit("blur", { value: this.value });
+      this.validate();
+    });
 
     input.addEventListener("keydown", (e) => {
       // Special handling for Enter key on forms
-      if (e.key === 'Enter' && this.closest('form')) {
-        const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
-        this.closest('form').dispatchEvent(submitEvent);
+      if (e.key === "Enter" && this.closest("form")) {
+        const submitEvent = new Event("submit", {
+          bubbles: true,
+          cancelable: true,
+        });
+        this.closest("form").dispatchEvent(submitEvent);
       }
-      this.emit("keydown", { key: e.key, value: this.value })
-    })
+      this.emit("keydown", { key: e.key, value: this.value });
+    });
   }
 
   onPropsChange(name, oldValue, newValue) {
-    const input = this.$(".input")
-    if (!input) return
+    const input = this.$(".input");
+    if (!input) return;
 
     switch (name) {
       case "value":
         if (input.value !== newValue) {
-          input.value = newValue || ""
-          this.value = newValue || ""
+          input.value = newValue || "";
+          this.value = newValue || "";
         }
-        break
+        break;
       case "disabled":
-        input.disabled = this.hasAttribute("disabled")
-        break
+        input.disabled = this.hasAttribute("disabled");
+        break;
       case "readonly":
-        input.readOnly = this.hasAttribute("readonly")
-        break
+        input.readOnly = this.hasAttribute("readonly");
+        break;
       case "required":
-        input.required = this.hasAttribute("required")
-        break
+        input.required = this.hasAttribute("required");
+        break;
       case "placeholder":
-        input.placeholder = newValue || ""
-        break
+        input.placeholder = newValue || "";
+        break;
       case "type":
-        input.type = newValue || "text"
-        break
+        input.type = newValue || "text";
+        break;
     }
   }
 
   validate() {
-    const input = this.$(".input")
-    if (!input) return true
+    const input = this.$(".input");
+    if (!input) return true;
 
-    const isValid = input.checkValidity()
-    input.setAttribute("aria-invalid", !isValid)
+    const isValid = input.checkValidity();
+    input.setAttribute("aria-invalid", !isValid);
 
     if (!isValid) {
       this.emit("invalid", {
         validity: input.validity,
         validationMessage: input.validationMessage,
-      })
+      });
     } else {
-      this.emit("valid", { value: this.value })
+      this.emit("valid", { value: this.value });
     }
 
-    return isValid
+    return isValid;
   }
 
   focus() {
-    const input = this.$(".input")
-    if (input) input.focus()
+    const input = this.$(".input");
+    if (input) input.focus();
   }
 
   blur() {
-    const input = this.$(".input")
-    if (input) input.blur()
+    const input = this.$(".input");
+    if (input) input.blur();
   }
 
   select() {
-    const input = this.$(".input")
-    if (input) input.select()
+    const input = this.$(".input");
+    if (input) input.select();
   }
 
   // Getters and setters
   get value() {
-    return this._value || ""
+    return this._value || "";
   }
 
   set value(val) {
-    this._value = val
-    this.setAttribute("value", val)
-    const input = this.$(".input")
+    this._value = val;
+    this.setAttribute("value", val);
+    const input = this.$(".input");
     if (input && input.value !== val) {
-      input.value = val
+      input.value = val;
     }
   }
 
   get disabled() {
-    return this.hasAttribute("disabled")
+    return this.hasAttribute("disabled");
   }
 
   set disabled(val) {
-    this.setBooleanAttribute("disabled", val)
+    this.setBooleanAttribute("disabled", val);
   }
 
   get required() {
-    return this.hasAttribute("required")
+    return this.hasAttribute("required");
   }
 
   set required(val) {
-    this.setBooleanAttribute("required", val)
+    this.setBooleanAttribute("required", val);
   }
 
   get readonly() {
-    return this.hasAttribute("readonly")
+    return this.hasAttribute("readonly");
   }
 
   set readonly(val) {
-    this.setBooleanAttribute("readonly", val)
+    this.setBooleanAttribute("readonly", val);
   }
 }
 
-customElements.define("app-input", AppInput)
-export default AppInput
+customElements.define("app-input", AppInput);
+export default AppInput;

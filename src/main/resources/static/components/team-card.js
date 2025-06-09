@@ -101,8 +101,8 @@ class TeamCard extends BaseComponent {
                     <span class="team-role">${SecurityUtils.sanitizeText(this.team.role_name?.replace("_", " ") || "member")}</span>
                 </div>
                 <div class="team-meta">
-                    <span>Created: ${SecurityUtils.sanitizeText(new Date(this.team.created_at).toLocaleDateString())}</span>
-                    <span>Members: ${this.team.member_count || 0}</span>
+                    <span>Created: ${SecurityUtils.sanitizeText(new Date(this.team.createdAt).toLocaleDateString())}</span>
+                    <span>Members: ${SecurityUtils.sanitizeText(this.team.member.count) || 0}</span>
                 </div>
                 <div class="team-actions">
                     <button class="action-btn primary" data-action="view">View Todos</button>

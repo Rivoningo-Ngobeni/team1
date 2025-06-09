@@ -308,9 +308,9 @@ class TodoCard extends BaseComponent {
                     <h3 id="todo-title-${this.todo.id}" class="todo-title">
                         ${SecurityUtils.sanitizeText(this.todo.title)}
                     </h3>
-                    <div class="todo-status" role="status" aria-label="Task status: ${this.todo.status.name}">
+                    <div class="todo-status" role="status" aria-label="Task status: ${SecurityUtils.sanitizeText(this.todo.status.name)}">
                         <span class="status-dot" aria-hidden="true"></span>
-                        ${this.todo.status.name}
+                        ${SecurityUtils.sanitizeText(this.todo.status.name)}
                     </div>
                 </header>
                 
@@ -337,10 +337,10 @@ class TodoCard extends BaseComponent {
                 ${
                   canEdit
                     ? `<footer class="todo-actions">
-                        <button class="action-btn primary ${this.todo.status_name}" 
+                        <button class="action-btn primary ${SecurityUtils.sanitizeText(this.todo.status.name)}" 
                                 data-action="toggle-status" 
-                                aria-label="Change status to ${this.todo.status.name || "next status"}">
-                            ${this.getStatusButtonText()}
+                                aria-label="Change status to ${SecurityUtils.sanitizeText(this.todo.status.name) || "next status"}">
+                            ${SecurityUtils.sanitizeText(this.getStatusButtonText())}
                         </button>
                         <button class="action-btn" 
                                 data-action="edit"
