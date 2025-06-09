@@ -51,7 +51,7 @@ jobs:
             sudo dnf install -y java-21-amazon-corretto
             
             echo "--- Writing environment variables to .env ---"
-            cat <<EOF > "$APP_DIR/.env"
+            cat <<EOF > "$APP_DIR/target/.env"
             SPRING_DATASOURCE_URL=${{ vars.DB_HOST }}:${{ vars.DB_PORT }}/${{ vars.DB_NAME }}
             SPRING_DATASOURCE_USERNAME=${{ vars.DB_USER }}
             SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }}
@@ -69,7 +69,7 @@ jobs:
             [Service]
             User=${{ vars.EC2_USER }}
             WorkingDirectory=$APP_DIR
-            EnvironmentFile=$APP_DIR/.env
+            EnvironmentFile=$APP_DIR/target/.env
             ExecStart=/usr/bin/java -jar $APP_DIR/$JAR_NAME
             Restart=on-failure
             RestartSec=10
