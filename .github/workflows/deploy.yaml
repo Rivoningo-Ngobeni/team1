@@ -71,7 +71,7 @@ jobs:
             User=${{ vars.EC2_USER }}
             WorkingDirectory=$APP_DIR
             EnvironmentFile=$APP_DIR/.env
-            ExecStart=/usr/bin/java -jar $JAR_NAME
+            ExecStart=/usr/bin/java -jar target/$JAR_NAME
             Restart=on-failure
             RestartSec=10
             
