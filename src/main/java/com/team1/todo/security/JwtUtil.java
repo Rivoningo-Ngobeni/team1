@@ -22,6 +22,8 @@ public class JwtUtil {
    @Value("${jwt.expiration}")
     private Long expiration;
 
+   private static final String USER_ID_CLAIM = "userId";
+
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
@@ -33,6 +35,8 @@ public class JwtUtil {
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
+
+    public Long extractUserId(String token) { return extractClaim(token, claims -> claims.get(USER_ID_CLAIM, Long.class));}
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
@@ -51,8 +55,9 @@ public class JwtUtil {
         return extractExpiration(token).before(new Date());
     }
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails, Long userId) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put(USER_ID_CLAIM, userId);
         return createToken(claims, userDetails.getUsername());
     }
 

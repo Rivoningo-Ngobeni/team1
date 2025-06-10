@@ -2,6 +2,8 @@ package com.team1.todo.service;
 
 import java.util.Optional;
 
+import com.team1.todo.security.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,8 @@ import com.team1.todo.repository.UserRepository;
 import com.team1.todo.repository.UserSystemRoleRepository;
 
 import jakarta.transaction.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Service
 public class UserService {
@@ -49,5 +53,32 @@ public class UserService {
         userSystemRoleRepository.save(userSystemRole);
 
         return user;
+    }
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    public Long getCurrentUserId() {
+        try {
+            HttpServletRequest request = getCurrentRequest();
+            if (request != null) {
+                String authHeader = request.getHeader("Authorization");
+                if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                    String jwt = authHeader.substring(7);
+                    return jwtUtil.extractUserId(jwt);
+                }
+            }
+        } catch (Exception e) {
+            // Fall back to null if anything goes wrong
+        }
+        return null;
+    }
+
+    private HttpServletRequest getCurrentRequest() {
+        try {
+            return ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

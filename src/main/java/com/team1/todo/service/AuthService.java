@@ -146,7 +146,7 @@ public class AuthService {
 
         if (userExists && passwordValid && totpValid) {
             User user = userOpt.get();
-            String token = jwtUtil.generateToken(user);
+            String token = jwtUtil.generateToken(user, user.getId());
             loginAttempts.remove(username);
             twoFaAttempts.remove(username);
 
