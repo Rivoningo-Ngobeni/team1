@@ -40,7 +40,7 @@ jobs:
           script: |
             set -e
             APP_DIR="/home/${{ vars.EC2_USER }}/team_one"
-            JAR_NAME=$(basename $APP_DIR/todo-*-app.jar)
+            JAR_NAME=$(basename $APP_DIR/target/todo-*-app.jar)
             SERVICE_NAME="team_one"
             
             echo "--- Preparing Java App in $APP_DIR ---"
