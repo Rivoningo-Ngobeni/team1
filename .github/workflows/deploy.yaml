@@ -58,6 +58,9 @@ jobs:
             SPRING_DATA_REST_BASE_PATH=${{vars.REST_BASE_PATH}}
             API_BASEURL=${{vars.EC2_HOST}}${{vars.REST_BASE_PATH}}
             EOF
+
+            echo "--- Exporting environment variables ---"
+            export $(grep -v '^#' $APP_DIR/target/.env | xargs)
             
             echo "--- Creating systemd service for $SERVICE_NAME ---"
             sudo bash -c "cat > /etc/systemd/system/$SERVICE_NAME.service" <<EOF
