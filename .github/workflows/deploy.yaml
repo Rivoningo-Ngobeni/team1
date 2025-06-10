@@ -40,17 +40,17 @@ jobs:
           script: |
             set -e
             APP_DIR="/home/${{ vars.EC2_USER }}/team_one"
-            JAR_NAME=$(basename $APP_DIR/target/todo-0.0.1-app.jar)
+            JAR_NAME="todo-0.0.1-app.jar"
             SERVICE_NAME="team_one"
             
             echo "--- Preparing Java App in $APP_DIR ---"
-            mkdir -p "$APP_DIR/target"
+            mkdir -p "$APP_DIR"
             
             echo "--- Installing Java 21 (Amazon Corretto) ---"
             sudo dnf install -y java-21-amazon-corretto
             
             echo "--- Writing environment variables to .env ---"
-            cat <<EOF > "$APP_DIR/target/.env"
+            cat <<EOF > "$APP_DIR/.env"
             SPRING_DATASOURCE_URL=jdbc:postgresql://${{ vars.DB_HOST }}:${{ vars.DB_PORT }}/${{ vars.DB_NAME }}
             SPRING_DATASOURCE_USERNAME=${{ vars.DB_USER }}
             SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }}
@@ -58,6 +58,8 @@ jobs:
             SPRING_DATA_REST_BASE_PATH=${{vars.REST_BASE_PATH}}
             API_BASEURL=${{vars.EC2_HOST}}${{vars.REST_BASE_PATH}}
             EOF
+            
+            chmod 600 "$APP_DIR/.env"
             
             echo "--- Creating systemd service for $SERVICE_NAME ---"
             sudo bash -c "cat > /etc/systemd/system/$SERVICE_NAME.service" <<EOF
@@ -68,7 +70,7 @@ jobs:
             [Service]
             User=${{ vars.EC2_USER }}
             WorkingDirectory=$APP_DIR
-            EnvironmentFile=$APP_DIR/target/.env
+            EnvironmentFile=$APP_DIR/.env
             ExecStart=/usr/bin/java -jar $JAR_NAME
             Restart=on-failure
             RestartSec=10
@@ -78,7 +80,6 @@ jobs:
             EOF
             
             echo "--- Reloading systemd and starting service ---"
-            sudo systemctl daemon-reexec
             sudo systemctl daemon-reload
             sudo systemctl enable $SERVICE_NAME
             sudo systemctl restart $SERVICE_NAME
@@ -91,15 +92,15 @@ jobs:
             
             echo "Configuring 'server_names_hash_bucket_size'..."
             if ! grep -q "server_names_hash_bucket_size" /etc/nginx/nginx.conf; then
-            sudo sed -i '/http {/a \    server_names_hash_bucket_size 128;' /etc/nginx/nginx.conf
+              sudo sed -i '/http {/a \    server_names_hash_bucket_size 128;' /etc/nginx/nginx.conf
             else
-            sudo sed -i 's/^\(\s*\)#\?\s*server_names_hash_bucket_size.*/\1server_names_hash_bucket_size 128;/' /etc/nginx/nginx.conf
+              sudo sed -i 's/^\(\s*\)#\?\s*server_names_hash_bucket_size.*/\1server_names_hash_bucket_size 128;/' /etc/nginx/nginx.conf
             fi
             
             NGINX_CONF="/etc/nginx/conf.d/team_one.conf"
             echo "Creating Nginx config file: $NGINX_CONF"
-              echo "
-              server {
+            sudo bash -c "cat > $NGINX_CONF" <<EOF
+            server {
               listen 80;
               listen [::]:80;
               server_name ${{ vars.EC2_HOST }};
@@ -116,7 +117,7 @@ jobs:
               proxy_set_header X-Forwarded-Proto \$scheme;
               }
             }
-              " | sudo tee "$NGINX_CONF" > /dev/null
+            EOF
             
               echo "Testing and restarting Nginx..."
               sudo nginx -t && sudo systemctl restart nginx
