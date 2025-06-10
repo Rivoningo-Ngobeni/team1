@@ -27,7 +27,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           source: "target/todo-*-app.jar"
-          target: "/home/${{ vars.EC2_USER }}/team_one/target/"
+          target: "/home/${{ vars.EC2_USER }}/team_one/target/todo-app.jar"
           rm: true
 
       - name: Run remote commands on EC2 and configure Nginx + systemd
@@ -69,7 +69,7 @@ jobs:
             User=${{ vars.EC2_USER }}
             WorkingDirectory=$APP_DIR
             EnvironmentFile=$APP_DIR/target/.env
-            ExecStart=/usr/bin/java -jar $APP_DIR/$JAR_NAME
+            ExecStart=/usr/bin/java -jar $APP_DIR/target/todo-app.jar
             Restart=on-failure
             RestartSec=10
             
