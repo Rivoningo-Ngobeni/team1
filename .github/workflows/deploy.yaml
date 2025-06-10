@@ -26,8 +26,8 @@ jobs:
           username: ${{ vars.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
-          source: "target/todo-*-app.jar"
-          target: "/home/${{ vars.EC2_USER }}/team_one/target/todo-app.jar"
+          source: "target/todo-0.0.1-app.jar"
+          target: "/home/${{ vars.EC2_USER }}/team_one/todo-app.jar"
           rm: true
 
       - name: Run remote commands on EC2 and configure Nginx + systemd
