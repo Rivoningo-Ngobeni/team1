@@ -91,7 +91,7 @@ class TodoFormPage {
           id="todo-due-date"
           type="date"
           class="form-control"
-          value="${isEdit && todo.due_date ? todo.due_date.split("T")[0] : ""}"
+          value="${isEdit && todo.due_date ? todo.dueDate.split("T")[0] : ""}"
           aria-describedby="due-date-error">
         <div id="due-date-error" class="form-error" role="alert" aria-live="polite"></div>
       </div>

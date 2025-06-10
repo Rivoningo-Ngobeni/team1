@@ -43,12 +43,6 @@ export default class UserManagementPage {
             </div>
         `
 
-//                <div>
-//                    <button type="button" class="btn btn-primary" id="create-user-btn">
-//                        <span aria-hidden="true">+</span> Create User
-//                    </button>
-//                </div>
-
 
     // Main content area
     const main = document.createElement("main")
@@ -79,10 +73,6 @@ export default class UserManagementPage {
     // Setup event listeners
 //    const createUserBtn = document.getElementById("create-user-btn")
     const searchInput = document.getElementById("search-input")
-
-//    createUserBtn.addEventListener("click", () => {
-//      this.showCreateUserForm()
-//    })
 
     searchInput.addEventListener("input", (e) => {
       this.filterUsers(e.target.value)

@@ -84,7 +84,22 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider());
-                http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                        .headers(headers -> headers
+                        .contentSecurityPolicy(csp -> csp
+                                .policyDirectives("default-src 'self'; " +
+                                        "script-src 'self'; " +
+                                        "style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; " +
+                                        "font-src 'self' https://fonts.gstatic.com; " +
+                                        "img-src 'self' https://cdn.example.com data:; " +
+                                        "connect-src 'self'; " +
+                                        "object-src 'none'; " +
+                                        "base-uri 'self'; " +
+                                        "frame-ancestors 'none'")
+                        )
+                );
+
+
 
         return http.build();
     }

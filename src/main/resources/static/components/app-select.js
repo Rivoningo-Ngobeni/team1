@@ -1,4 +1,5 @@
 import BaseComponent from "./base-component.js"
+import SecurityUtils from "../utils/security.js";
 
 class AppSelect extends BaseComponent {
   static get observedAttributes() {
@@ -115,35 +116,35 @@ class AppSelect extends BaseComponent {
     `
   }
 
-  renderOptions() {
-    let optionsHtml = ""
+renderOptions() {
+  let optionsHtml = ""
 
-    // Add placeholder option if not multiple and we have a placeholder
-    if (!this.hasAttribute("multiple") && this.getAttribute("placeholder")) {
-      const placeholder = this.getAttribute("placeholder") || "Select..."
-      optionsHtml += `<option value="" ${!this._value ? "selected" : ""} disabled>${placeholder}</option>`
-    }
-
-    // Add options from this.options
-    if (this.options && this.options.length > 0) {
-      this.options.forEach((option) => {
-        const selected = Array.isArray(this._value)
-          ? this._value.includes(option.value)
-          : this._value === option.value
-        optionsHtml += `
-          <option 
-            value="${option.value}" 
-            ${selected ? "selected" : ""} 
-            ${option.disabled ? "disabled" : ""}
-          >
-            ${option.label}
-          </option>
-        `
-      })
-    }
-
-    return optionsHtml
+  // Add placeholder option if not multiple and we have a placeholder
+  if (!this.hasAttribute("multiple") && this.getAttribute("placeholder")) {
+    const placeholder = this.getAttribute("placeholder") || "Select..."
+    optionsHtml += `<option value="" ${!this._value ? "selected" : ""} disabled>${SecurityUtils.sanitizeText(placeholder)}</option>`
   }
+
+  // Add options from this.options
+  if (this.options && this.options.length > 0) {
+    this.options.forEach((option) => {
+      const selected = Array.isArray(this._value)
+        ? this._value.includes(option.value)
+        : this._value === option.value
+      optionsHtml += `
+        <option 
+          value="${SecurityUtils.sanitizeText(option.value)}" 
+          ${selected ? "selected" : ""} 
+          ${option.disabled ? "disabled" : ""}
+        >
+          ${SecurityUtils.sanitizeText(option.label)}
+        </option>
+      `
+    })
+  }
+
+  return optionsHtml
+}
 
   setupEventListeners() {
     this.addEventListener("input", this.handleInput.bind(this))
