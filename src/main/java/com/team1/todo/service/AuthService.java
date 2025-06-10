@@ -52,7 +52,7 @@ public class AuthService {
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$");
 
     @Transactional
-    public User registerUser(String username, String password, String roleName) {
+    public User registerUser(String username, String password) {
         if (!isValidUsername(username)) {
             throw new SecurityException("Invalid username format");
         }

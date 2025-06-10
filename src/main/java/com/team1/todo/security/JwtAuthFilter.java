@@ -1,6 +1,6 @@
 package com.team1.todo.security;
 
-import com.team1.todo.service.UserDetailsService;
+import com.team1.todo.service.UserDetailService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,7 +19,7 @@ import java.io.IOException;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Autowired
-    private UserDetailsService userDetailsService;
+    private UserDetailService userDetailsService;
 
     @Autowired
     private JwtUtil jwtUtil;

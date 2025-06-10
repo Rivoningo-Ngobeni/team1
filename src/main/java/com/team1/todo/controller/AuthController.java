@@ -37,8 +37,7 @@ public class AuthController {
         try {
             User registeredUser = authService.registerUser(
                     request.getUsername(),
-                    request.getPassword(),
-                    request.getRole()
+                    request.getPassword()
             );
             if (registeredUser != null) {
                 String username = request.getUsername();
@@ -111,8 +110,6 @@ public class AuthController {
         @Size(min = 8, max = 256)
         private String password;
 
-        private String role = "todo_user";
-
         // Getters and setters
         public String getUsername() {
             return username;
@@ -128,14 +125,6 @@ public class AuthController {
 
         public void setPassword(String password) {
             this.password = password;
-        }
-
-        public String getRole() {
-            return role;
-        }
-
-        public void setRole(String role) {
-            this.role = role;
         }
     }
 
