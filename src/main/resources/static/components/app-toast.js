@@ -1,4 +1,5 @@
 import BaseComponent from "./base-component.js"
+import SecurityUtils from "../utils/security.js"; 
 
 class AppToast extends BaseComponent {
   static get observedAttributes() {
@@ -186,7 +187,7 @@ class AppToast extends BaseComponent {
           ${icons[type]}
         </div>
         <div class="toast-content">
-          <p class="toast-message">${message}</p>
+          <p class="toast-message">${SecurityUtils.sanitizeText(message)}</p>
         </div>
         ${
           dismissible
