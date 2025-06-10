@@ -1,15 +1,42 @@
 import { ToastService } from "../components/app-toast.js"
 import ApiService from "../utils/api.js"
+import AuthService from "../utils/auth.js"
+import PermissionService from "../utils/permissions.js"
 import Router from "../utils/router.js"
 import SecurityUtils from "../utils/security.js"
-import PermissionService from "../utils/permissions.js"
 
 class TeamsPage {
   static teamsList = []
+  static currentSearchTerm = ""
+  static showOnlyMyTeams = false
 
   static async render() {
     const app = document.getElementById("app")
     app.innerHTML = ""
+
+    // Add CSS for highlighting user's teams
+    const style = document.createElement("style")
+    style.textContent = `
+      .user-team-card {
+        border-left: 4px solid var(--primary-color) !important;
+        background-color: var(--surface-color-hover) !important;
+      }
+      
+      .user-team-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--primary-color);
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        margin-left: 8px;
+        vertical-align: middle;
+      }
+    `
+    document.head.appendChild(style)
 
     // Create main layout
     const layout = document.createElement("div")
@@ -56,6 +83,12 @@ class TeamsPage {
             <div class="flex items-center gap-2">
                 <input type="search" class="form-control" id="search-input" placeholder="Search teams..." aria-label="Search teams">
             </div>
+            <div class="flex items-center gap-2">
+                <label for="my-teams-filter" class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="my-teams-filter" class="form-checkbox">
+                    <span>Show my teams only</span>
+                </label>
+            </div>
         `
 
     // Teams container
@@ -80,16 +113,20 @@ class TeamsPage {
   }
 
   static setupEventListeners() {
-    const createTeamBtn = document.getElementById("create-team-btn")
-    const searchInput = document.getElementById("search-input")
+    // Create team button
+    document
+      .getElementById("create-team-btn")
+      ?.addEventListener("click", () => this.showCreateTeamModal())
 
-    createTeamBtn.addEventListener("click", () => this.showCreateTeamModal())
-
-    if (searchInput) {
-      searchInput.addEventListener("input", (e) => {
-        this.filterTeams(e.target.value)
-      })
-    }
+    // Search input
+    document
+      .getElementById("search-input")
+      ?.addEventListener("input", (e) => this.filterTeams(e.target.value))
+      
+    // My teams filter
+    document
+      .getElementById("my-teams-filter")
+      ?.addEventListener("change", (e) => this.filterMyTeams(e.target.checked))
   }
 
   static async loadTeams() {
@@ -135,17 +172,31 @@ class TeamsPage {
   static renderTeams(teams) {
     const teamsContainer = document.getElementById("teams-container")
     teamsContainer.innerHTML = ""
-
+    
+    // Get the current user
+    const currentUser = AuthService.getCurrentUser()
+    
     teams.forEach(async (team) => {
-       const isTeamLead = await PermissionService.isTeamLead(team.teamId)
+      // Check if the current user is a member of this team
+      const isUserMember = team.members.some(member => member.userId === currentUser?.id)
+      const isTeamLead = await PermissionService.isTeamLead(team.teamId)
+      
       const teamCard = document.createElement("div")
       teamCard.className = "team-card"
       teamCard.setAttribute("role", "listitem")
+      
+      // Add a class to highlight teams the user is a part of
+      if (isUserMember) {
+        teamCard.classList.add("user-team")
+      }
+      
       teamCard.innerHTML = `
-                <article class="bg-surface p-4 rounded shadow border-left">
-                    <h3 class="mb-2">${SecurityUtils.sanitizeText(team.teamName)}</h3>
+                <article class="bg-surface p-4 rounded shadow border-left ${isUserMember ? 'user-team-card' : ''}">
+                    <h3 class="mb-2">${SecurityUtils.sanitizeText(team.teamName)} 
+                      ${isUserMember ? '<span class="user-team-badge" title="You are a member of this team">👤</span>' : ''}
+                    </h3>
                     <div class="flex items-center text-secondary mb-4">
-                        <span>Role: ${isTeamLead ? "Team Lead" : "Team Member"}</span>
+                        <span>${isUserMember ? `Role: ${isTeamLead ? "Team Lead" : "Team Member"}` : 'Not a member'}</span>
                         <span class="mx-2">•</span>
                         <span>${team.members.length} member${team.members.length !== 1 ? "s" : ""}</span>
                     </div>
@@ -164,15 +215,6 @@ class TeamsPage {
                 </article>
             `
 
-      // Event listeners
-      const viewBtn = teamCard.querySelector(".view-team-btn")
-      if (viewBtn) {
-        viewBtn.addEventListener("click", (e) => {
-          const teamId = e.target.getAttribute("data-id")
-          Router.navigate(`/teams/${teamId}/todos`)
-        })
-      }
-
       const manageBtn = teamCard.querySelector(".manage-team-btn")
       if (manageBtn) {
         manageBtn.addEventListener("click", (e) => {
@@ -185,14 +227,34 @@ class TeamsPage {
     })
   }
 
-  static filterTeams(searchValue) {
-    if (!this.teamsList) return
-
-    const filteredTeams = this.teamsList.filter((team) =>
-      team.name.toLowerCase().includes(searchValue.toLowerCase()),
-    )
-
-    this.renderTeams(filteredTeams)
+  static filterTeams(searchTerm) {
+    this.currentSearchTerm = searchTerm.toLowerCase()
+    this.applyFilters()
+  }
+  
+  static filterMyTeams(showOnlyMyTeams) {
+    this.showOnlyMyTeams = showOnlyMyTeams
+    this.applyFilters()
+  }
+  
+  static applyFilters() {
+    const teamCards = document.querySelectorAll(".team-card")
+    
+    teamCards.forEach((card) => {
+      const teamName = card
+        .querySelector("h3")
+        ?.textContent?.toLowerCase()
+      
+      const matchesSearch = !this.currentSearchTerm || 
+        (teamName && teamName.includes(this.currentSearchTerm))
+      
+      const isUserTeam = card.classList.contains('user-team')
+      const matchesTeamFilter = !this.showOnlyMyTeams || isUserTeam
+      
+      // Both filters must pass
+      const isVisible = matchesSearch && matchesTeamFilter
+      card.style.display = isVisible ? "" : "none"
+    })
   }
 
   static showCreateTeamModal() {
@@ -259,7 +321,7 @@ class TeamsPage {
       createBtn.textContent = "Creating..."
 
       try {
-        const response = await ApiService.post("/teams", { name: teamName })
+        const response = await ApiService.post("/teams-updates", { name: teamName })
 
           ToastService.show("Team created successfully", "success")
           document.body.removeChild(modal)

@@ -76,7 +76,8 @@ public class SecurityConfig {
                                 "/components/**",
                                 "/pages/**",
                                 "/utils/**",
-                                "/utils/config"
+                                "/utils/config",
+                                "/favicon.ico"
                         ).permitAll()
                         .requestMatchers("/api/config/public", "/api/config/public/**").permitAll()
                         .requestMatchers("/api/config", "/api/config/**").authenticated()

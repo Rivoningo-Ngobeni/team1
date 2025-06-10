@@ -1,8 +1,11 @@
 package com.team1.todo.repository;
 
-import com.team1.todo.entity.TodoStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.stereotype.Repository;
 
-@RepositoryRestResource
-public interface TodoStatusRepository extends JpaRepository<TodoStatus, Long> {}
+import com.team1.todo.entity.TodoStatus;
+
+@Repository
+public interface TodoStatusRepository extends JpaRepository<TodoStatus, Long> {
+    // Any custom methods can be added here
+}

@@ -1,9 +1,17 @@
 package com.team1.todo.entity;
 
-import jakarta.persistence.*;
-
 import java.util.HashSet;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "todo_status")
@@ -13,6 +21,7 @@ public class TodoStatus {
 
     private String name;
 
+    @JsonManagedReference("todo-status")
     @OneToMany(mappedBy = "status", cascade = CascadeType.ALL)
     private Set<Todo> todos = new HashSet<>();
 
@@ -45,7 +54,6 @@ public class TodoStatus {
         return "TodoStatus{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", todos=" + todos +
                 '}';
     }
 }

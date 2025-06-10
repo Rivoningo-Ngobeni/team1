@@ -180,10 +180,15 @@ class AppSelect extends BaseComponent {
     this.emit("change", { value: this._value })
     
     // Log the change for debugging
-    console.log(`AppSelect value changed to: ${this._value}`);
+    console.log(`AppSelect value changed to: ${JSON.stringify(this._value)}`);
     
     // Validate
     this.validate()
+    
+    // Bubble the event if needed
+    if (typeof this.onValueChange === 'function') {
+      this.onValueChange(this._value);
+    }
   }
 
   onPropsChange(name, oldValue, newValue) {
@@ -248,14 +253,24 @@ class AppSelect extends BaseComponent {
     if (select) {
       if (this.hasAttribute("multiple")) {
         Array.from(select.options).forEach((option) => {
-          option.selected = Array.isArray(value) && value.includes(option.value);
+          option.selected = Array.isArray(this._value) 
+            ? this._value.includes(option.value)
+            : this._value === option.value;
         });
       } else {
-        select.value = value;
+        select.value = this._value;
       }
+      
+      // Emit change event when value is set programmatically
+      this.emit("change", { value: this._value });
+      
+      // Trigger native change event for better compatibility
+      const changeEvent = new Event("change", { bubbles: true });
+      select.dispatchEvent(changeEvent);
+      
+      // Log for debugging
+      console.log(`AppSelect value set to ${this._value}`);
     }
-    
-    console.log(`AppSelect setValue: ${value}`);
   }
 
   validate() {

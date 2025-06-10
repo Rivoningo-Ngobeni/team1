@@ -39,7 +39,7 @@ class DashboardPage {
                     <p class="page-subtitle">Overview of your tasks and team activity</p>
                 </div>
                 <div class="flex items-center gap-4">
-                    <app-select id="team-selector" aria-label="Select team"></app-select>
+                    <select id="team-selector" aria-label="Select team"></select>
                     <app-button variant="primary" id="create-todo-btn">
                         <span aria-hidden="true">+</span>
                         Create Todo
@@ -88,8 +88,7 @@ class DashboardPage {
                     </button>
                 </div>
                 <div class="flex items-center gap-2">
-                    <app-select id="status-filter" aria-label="Filter by status">
-                    </app-select>
+                    <select id="status-filter" aria-label="Filter by status"></select>
                     <app-input 
                         type="search" 
                         placeholder="Search tasks..." 
@@ -152,15 +151,23 @@ class DashboardPage {
             const statusFilter = document.getElementById("status-filter")
             const statuses = response._embedded.todoStatuses
 
-            const options = [{ value: "", label: "All" }]
+            // Clear existing options
+            statusFilter.innerHTML = "";
+            
+            // Add default option
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.textContent = "All";
+            statusFilter.appendChild(defaultOption);
+            
+            // Add status options
             statuses.forEach((status) => {
-              options.push({
-                value: status.id.toString(),
-                label: SecurityUtils.sanitizeText(status.name),
-              })
-            })
+              const option = document.createElement("option");
+              option.value = status.id.toString();
+              option.textContent = SecurityUtils.sanitizeText(status.name);
+              statusFilter.appendChild(option);
+            });
 
-            statusFilter.setOptions(options)
             return statuses
         } catch (error) {
         console.log(error)
@@ -174,15 +181,22 @@ class DashboardPage {
         const teamSelector = document.getElementById("team-selector")
         const teams = response._embedded.teams
 
-        const options = [{ value: "", label: "All Teams" }]
+        // Clear existing options
+        teamSelector.innerHTML = "";
+        
+        // Add default option
+        const defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.textContent = "All Teams";
+        teamSelector.appendChild(defaultOption);
+        
+        // Add team options
         teams.forEach((team) => {
-          options.push({
-            value: team.id.toString(),
-            label: SecurityUtils.sanitizeText(team.name),
-          })
-        })
-
-        teamSelector.setOptions(options)
+          const option = document.createElement("option");
+          option.value = team.id.toString();
+          option.textContent = SecurityUtils.sanitizeText(team.name);
+          teamSelector.appendChild(option);
+        });
 
         // Set current team if exists
         const currentTeam = StateManager.getState().currentTeam
@@ -476,8 +490,8 @@ class DashboardPage {
     const teamSelector = document.getElementById("team-selector")
     if (teamSelector) {
       teamSelector.addEventListener("change", (e) => {
-        console.log('Team selector changed:', e.detail);
-        const selectedTeam = e.detail.value;
+        const selectedTeam = e.target.value;
+        console.log('Team selector changed:', selectedTeam);
         StateManager.setState({ currentTeam: selectedTeam })
         this.filterTodos()
       })
@@ -487,7 +501,7 @@ class DashboardPage {
     const statusFilter = document.getElementById("status-filter")
     if (statusFilter) {
       statusFilter.addEventListener("change", (e) => {
-        console.log('Status filter changed:', e.detail);
+        console.log('Status filter changed:', e.target.value);
         this.filterTodos()
       })
     }
@@ -525,7 +539,7 @@ class DashboardPage {
     const statusFilter = document.getElementById("status-filter")
     const searchInput = document.getElementById("search-input")
 
-    // Get values, ensuring we handle null/undefined correctly
+    // Get values directly from standard select elements
     const selectedTeam = teamSelector ? teamSelector.value : '';
     const selectedStatus = statusFilter ? statusFilter.value : '';
     const searchTerm = searchInput && searchInput.value ? searchInput.value.toLowerCase() : '';
@@ -541,7 +555,7 @@ class DashboardPage {
 
     if (selectedTeam) {
       filtered = filtered.filter((todo) => {
-        const result = todo.team.id && todo.team.id.toString() === selectedTeam;
+        const result = todo.team && todo.team.id && todo.team.id.toString() === selectedTeam;
         return result;
       });
       console.log(`After team filter: ${filtered.length} todos`);
@@ -549,7 +563,7 @@ class DashboardPage {
 
     if (selectedStatus) {
       filtered = filtered.filter((todo) => {
-        const result = todo.status.name === selectedStatus;
+        const result = todo.status && todo.status.id && todo.status.id.toString() === selectedStatus;
         return result; 
       });
       console.log(`After status filter: ${filtered.length} todos`);

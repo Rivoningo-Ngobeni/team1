@@ -1,16 +1,26 @@
 package com.team1.todo.entity;
 
-import jakarta.persistence.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "users")
@@ -29,6 +39,7 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserSystemRole> systemRoles = new HashSet<>();
 
+    @JsonManagedReference("user-teams")
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<TeamMember> teamMemberships = new HashSet<>();
 
@@ -55,10 +66,12 @@ public class User implements UserDetails {
                 .collect(Collectors.toSet());
     }
 
+    @Override
     public String getPassword() {
         return passwordHash;
     }
 
+    @Override
     public String getUsername() {
         return username;
     }
@@ -102,6 +115,12 @@ public class User implements UserDetails {
     public Set<UserSystemRole> getSystemRoles() {
         return systemRoles;
     }
+    
+    public List<String> getSystemRoleNames() {
+        return systemRoles.stream()
+                .map(usr -> usr.getRole().getName())
+                .collect(Collectors.toList());
+    }
 
     public void setSystemRoles(Set<UserSystemRole> systemRoles) {
         this.systemRoles = systemRoles;
@@ -137,8 +156,6 @@ public class User implements UserDetails {
                 ", passwordSalt='" + passwordSalt + '\'' +
                 ", twoFaSecret='" + twoFaSecret + '\'' +
                 ", createdAt=" + createdAt +
-                ", systemRoles=" + systemRoles +
-                ", teamMemberships=" + teamMemberships +
                 '}';
     }
 }
