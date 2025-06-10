@@ -123,5 +123,8 @@ jobs:
             
               echo "Testing and restarting Nginx..."
               sudo nginx -t && sudo systemctl restart nginx
+
+            echo "--- Start application ---"
+            nohup java -jar $APP_DIR/$JAR_NAME > /dev/null 2>&1 &
             
             echo "✅ Deployment complete. Java app is running under systemd and accessible via NGINX."
