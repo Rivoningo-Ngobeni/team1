@@ -51,16 +51,13 @@ jobs:
             
             echo "--- Writing environment variables to .env ---"
             cat <<EOF > "$APP_DIR/target/.env"
-            SPRING_DATASOURCE_URL=${{ vars.DB_HOST }}:${{ vars.DB_PORT }}/${{ vars.DB_NAME }}
+            SPRING_DATASOURCE_URL=jdbc:postgresql://${{ vars.DB_HOST }}:${{ vars.DB_PORT }}/${{ vars.DB_NAME }}
             SPRING_DATASOURCE_USERNAME=${{ vars.DB_USER }}
             SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }}
             SPRING_APPLICATION_NAME=${{vars.APPLICATION_NAME}}
             SPRING_DATA_REST_BASE_PATH=${{vars.REST_BASE_PATH}}
             API_BASEURL=${{vars.EC2_HOST}}${{vars.REST_BASE_PATH}}
             EOF
-
-            echo "--- Exporting environment variables ---"
-            export $(grep -v '^#' $APP_DIR/target/.env | xargs)
             
             echo "--- Creating systemd service for $SERVICE_NAME ---"
             sudo bash -c "cat > /etc/systemd/system/$SERVICE_NAME.service" <<EOF
@@ -123,8 +120,5 @@ jobs:
             
               echo "Testing and restarting Nginx..."
               sudo nginx -t && sudo systemctl restart nginx
-
-            echo "--- Start application ---"
-            nohup java -jar $APP_DIR/$JAR_NAME > /dev/null 2>&1 &
             
             echo "✅ Deployment complete. Java app is running under systemd and accessible via NGINX."
