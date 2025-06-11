@@ -56,7 +56,7 @@ jobs:
             SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }}
             SPRING_APPLICATION_NAME=${{vars.APPLICATION_NAME}}
             SPRING_DATA_REST_BASE_PATH=${{vars.REST_BASE_PATH}}
-            API_BASEURL=${{vars.EC2_HOST}}${{vars.REST_BASE_PATH}}
+            API_BASEURL=https://garlic-phone.com${{vars.REST_BASE_PATH}}
             EOF
             
             chmod 600 "$APP_DIR/.env"
@@ -135,8 +135,8 @@ jobs:
             echo "--- Debugging: Checking Nginx server blocks ---"
             sudo nginx -T | grep server_name
             
-            echo "--- Debugging: Checking if port 80 is open ---"
-            sudo netstat -tuln | grep :80 || echo "Port 80 not open"
+            echo "--- Debugging: Checking if ports 80 and 443 are open ---"
+            sudo netstat -tuln | grep -E ':80|:443' || echo "Ports 80 or 443 not open"
             
             echo "--- Obtaining SSL certificate with Certbot ---"
             if [ ! -d "/etc/letsencrypt/live/garlic-phone.com" ]; then
@@ -186,6 +186,11 @@ jobs:
                 ssl_protocols TLSv1.2 TLSv1.3;
                 ssl_prefer_server_ciphers on;
                 ssl_ciphers EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH;
+            
+                # Handle requests to EC2 host
+                if (\$host != "garlic-phone.com") {
+                    return 301 https://garlic-phone.com\$request_uri;
+                }
             
                 # Custom error logging for /utils/security.js
                 location = /utils/security.js {
