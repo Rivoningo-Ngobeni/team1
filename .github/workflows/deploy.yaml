@@ -229,10 +229,16 @@ jobs:
               exit 1
             }
             
+            echo "--- Debugging: Checking Java app response for root ---"
+            curl -v http://localhost:8080/ || echo "Java app not responding for root"
+            
             echo "--- Debugging: Checking Java app response for /utils/security.js ---"
             curl -v http://localhost:8080/utils/security.js || echo "Java app not responding for /utils/security.js"
             
-            echo "--- Debugging: Checking external response ---"
-            curl -v -L https://garlic-phone.com/utils/security.js || echo "External request failed"
+            echo "--- Debugging: Checking external response for root ---"
+            curl -v -L https://garlic-phone.com/ || echo "External request for root failed"
+            
+            echo "--- Debugging: Checking external response for /utils/security.js ---"
+            curl -v -L https://garlic-phone.com/utils/security.js || echo "External request for /utils/security.js failed"
             
             echo "✅ Deployment complete. Java app is running under systemd and accessible via NGINX with HTTPS."
