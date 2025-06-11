@@ -292,9 +292,6 @@ class DashboardPage {
                 <div class="empty-state">
                     <h3>No tasks found</h3>
                     <p>Create your first task to get started!</p>
-                    <app-button variant="primary" onclick="DashboardPage.showCreateTodoForm()">
-                        Create Task
-                    </app-button>
                 </div>
             `
       return
