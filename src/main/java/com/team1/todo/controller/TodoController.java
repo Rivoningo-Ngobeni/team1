@@ -1,6 +1,7 @@
 package com.team1.todo.controller;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +22,11 @@ import org.springframework.web.server.ResponseStatusException;
 import com.team1.todo.dto.TodoDto;
 import com.team1.todo.dto.TodoRequestDto;
 import com.team1.todo.entity.Todo;
+import com.team1.todo.entity.TodoStatus;
 import com.team1.todo.entity.User;
 import com.team1.todo.mapper.TodoMapper;
 import com.team1.todo.repository.TodoRepository;
+import com.team1.todo.repository.TodoStatusRepository;
 import com.team1.todo.repository.UserRepository;
 import com.team1.todo.service.TodoService;
 
@@ -34,12 +37,14 @@ public class TodoController {
     private final TodoRepository todoRepository;
     private final TodoService todoService;
     private final UserRepository userRepository;
+    private final TodoStatusRepository todoStatusRepository;
 
     @Autowired
-    public TodoController(TodoRepository todoRepository, TodoService todoService, UserRepository userRepository) {
+    public TodoController(TodoRepository todoRepository, TodoService todoService, UserRepository userRepository, TodoStatusRepository todoStatusRepository) {
         this.todoRepository = todoRepository;
         this.todoService = todoService;
         this.userRepository = userRepository;
+        this.todoStatusRepository = todoStatusRepository;
     }
 
     @GetMapping
@@ -58,7 +63,10 @@ public class TodoController {
 
     @PostMapping({"/", ""})
     public ResponseEntity<TodoDto> createTodo(@RequestBody TodoRequestDto todoRequest) {
+        TodoStatus todoStatus = todoStatusRepository.findByName("Open").orElseThrow(() -> new RuntimeException("Todo status not found"));
         Todo savedTodo = todoService.createFromDto(todoRequest);
+        savedTodo.setCreatedBy(getCurrentUser());
+        savedTodo.setStatus(todoStatus);
         return new ResponseEntity<>(TodoMapper.toDto(savedTodo), HttpStatus.CREATED);
     }
 
