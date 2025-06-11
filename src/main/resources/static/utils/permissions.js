@@ -3,7 +3,7 @@ import authService from "./auth.js"
 
 export default class PermissionService {
   static hasSystemRole(user, role) {
-    return user && user.system_roles && user.system_roles.includes(role)
+    return user && user.systemRoles && user.systemRoles.includes(role)
   }
 
   static isSystemAdmin(user = null) {

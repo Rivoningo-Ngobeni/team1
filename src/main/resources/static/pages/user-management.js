@@ -370,7 +370,6 @@ export default class UserManagementPage {
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" id="cancel-btn">Cancel</button>
-        <button type="button" class="btn btn-danger" id="delete-btn">Delete User</button>
       </div>
     `
 
