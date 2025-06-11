@@ -69,18 +69,11 @@ public class TodoService {
                     HttpStatus.BAD_REQUEST, "User not found with id: " + dto.getCreatedById()));
             todo.setCreatedBy(createdByUser);
         }
-        
-        if (dto.getStatusId() != null) {
-            TodoStatus status = todoStatusRepository.findById(dto.getStatusId())
-                .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, "Status not found with id: " + dto.getStatusId()));
-            todo.setStatus(status);
-        } else {
-            TodoStatus defaultStatus = todoStatusRepository.findById(1L)
-                .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR, "Default status not found"));
-            todo.setStatus(defaultStatus);
-        }
+
+        TodoStatus defaultStatus = todoStatusRepository.findByName("Open")
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR, "Default status not found"));
+        todo.setStatus(defaultStatus);
         
         validateTodoAssignment(todo);
         return todoRepository.save(todo);

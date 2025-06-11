@@ -35,8 +35,8 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthFilter jwtAuthFilter;
 
-    @Value("#{'${app.cors.allowedOrigins}'.split(',')}")
-    private List<String> allowedOrigins;
+//     @Value("#{'${app.cors.allowedOrigins}'.split(',')}")
+    private List<String> allowedOrigins = Arrays.asList("http://localhost:8080", "https://garlic-phone.com", "http://garlic-phone.com", "ec2-13-245-89-176.af-south-1.compute.amazonaws.com:8080");
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -109,7 +109,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(allowedOrigins);
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("Authorization",
                 "Content-Type",
                 "X-Requested-With",
