@@ -97,13 +97,13 @@ jobs:
             fi
             
             echo "--- Obtaining SSL certificate with Certbot ---"
-            if [ ! -d "/etc/letsencrypt/live/${{ vars.EC2_HOST }}" ]; then
-              sudo certbot --nginx -d ${{ vars.EC2_HOST }} --non-interactive --agree-tos --email admin@${{ vars.EC2_HOST }} || {
+            if [ ! -d "/etc/letsencrypt/live/${{ vars.DOMAIN_NAME }}" ]; then
+              sudo certbot --nginx -d ${{ vars.DOMAIN_NAME }} --non-interactive --agree-tos --email admin@${{ vars.DOMAIN_NAME }} || {
                 echo "Error: Certbot failed to obtain certificate."
                 exit 1
               }
             else
-              echo "SSL certificate already exists for ${{ vars.EC2_HOST }}"
+              echo "SSL certificate already exists for ${{ vars.DOMAIN_NAME }}"
             fi
             
             echo "Configuring 'server_names_hash_bucket_size'..."
@@ -120,7 +120,7 @@ jobs:
             server {
                 listen 80;
                 listen [::]:80;
-                server_name ${{ vars.EC2_HOST }};
+                server_name ${{ vars.DOMAIN_NAME }};
             
                 # Redirect all HTTP traffic to HTTPS
                 return 301 https://\$host\$request_uri;
@@ -130,11 +130,11 @@ jobs:
             server {
                 listen 443 ssl;
                 listen [::]:443 ssl;
-                server_name ${{ vars.EC2_HOST }};
+                server_name ${{ vars.DOMAIN_NAME }};
             
                 # SSL certificate paths
-                ssl_certificate /etc/letsencrypt/live/${{ vars.EC2_HOST }}/fullchain.pem;
-                ssl_certificate_key /etc/letsencrypt/live/${{ vars.EC2_HOST }}/privkey.pem;
+                ssl_certificate /etc/letsencrypt/live/${{ vars.DOMAIN_NAME }}/fullchain.pem;
+                ssl_certificate_key /etc/letsencrypt/live/${{ vars.DOMAIN_NAME }}/privkey.pem;
             
                 # SSL security settings
                 ssl_protocols TLSv1.2 TLSv1.3;
