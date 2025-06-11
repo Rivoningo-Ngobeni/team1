@@ -5,12 +5,12 @@ class StateManager {
     this.middleware = []
   }
 
-  // Get current state
+  
   getState() {
     return { ...this.state }
   }
 
-  // Set state with optional path
+  
   setState(updates, path = null) {
     const prevState = { ...this.state }
 
@@ -20,14 +20,14 @@ class StateManager {
       this.state = { ...this.state, ...updates }
     }
 
-    // Apply middleware
+    
     this.applyMiddleware(prevState, this.state, updates)
 
-    // Notify subscribers
+    
     this.notifySubscribers(prevState, this.state, updates)
   }
 
-  // Set nested state using dot notation (e.g., 'user.profile.name')
+  
   setNestedState(value, path) {
     const keys = path.split(".")
     let current = this.state
@@ -43,7 +43,7 @@ class StateManager {
     current[keys[keys.length - 1]] = value
   }
 
-  // Get nested state
+  
   getNestedState(path) {
     const keys = path.split(".")
     let current = this.state
@@ -59,7 +59,7 @@ class StateManager {
     return current
   }
 
-  // Subscribe to state changes
+  
   subscribe(callback, path = null) {
     const id = Date.now() + Math.random()
 
@@ -69,7 +69,7 @@ class StateManager {
 
     this.subscribers.get(path).set(id, callback)
 
-    // Return unsubscribe function
+    
     return () => {
       if (this.subscribers.has(path)) {
         this.subscribers.get(path).delete(id)
@@ -80,9 +80,9 @@ class StateManager {
     }
   }
 
-  // Notify subscribers
+  
   notifySubscribers(prevState, newState, updates) {
-    // Notify global subscribers
+    
     if (this.subscribers.has(null)) {
       this.subscribers.get(null).forEach((callback) => {
         try {
@@ -92,7 +92,7 @@ class StateManager {
       })
     }
 
-    // Notify path-specific subscribers
+    
     this.subscribers.forEach((pathSubscribers, path) => {
       if (path && this.hasPathChanged(prevState, newState, path)) {
         const currentValue = this.getNestedState(path)
@@ -106,7 +106,7 @@ class StateManager {
     })
   }
 
-  // Check if a specific path has changed
+  
   hasPathChanged(prevState, newState, path) {
     const prevValue = this.getValueFromState(prevState, path)
     const newValue = this.getValueFromState(newState, path)
@@ -128,12 +128,12 @@ class StateManager {
     return current
   }
 
-  // Add middleware
+  
   addMiddleware(middleware) {
     this.middleware.push(middleware)
   }
 
-  // Apply middleware
+  
   applyMiddleware(prevState, newState, updates) {
     this.middleware.forEach((middleware) => {
       try {
@@ -143,14 +143,14 @@ class StateManager {
     })
   }
 
-  // Reset state
+  
   reset() {
     const prevState = { ...this.state }
     this.state = {}
     this.notifySubscribers(prevState, this.state, {})
   }
 
-  // Batch updates
+  
   batch(updateFn) {
     const prevState = { ...this.state }
     updateFn((updates) => {
@@ -159,7 +159,7 @@ class StateManager {
     this.notifySubscribers(prevState, this.state, {})
   }
 
-  // Computed properties
+  
   computed(computeFn, dependencies = []) {
     let cachedValue
     let cachedDeps
@@ -180,7 +180,7 @@ class StateManager {
     return JSON.stringify(a) === JSON.stringify(b)
   }
 
-  // Persistence
+  
   persist(key = "app_state") {
     try {
       localStorage.setItem(key, JSON.stringify(this.state))
@@ -200,7 +200,7 @@ class StateManager {
   }
 }
 
-// Create singleton instance
+
 const stateManager = new StateManager()
 
 export default stateManager

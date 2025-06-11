@@ -69,7 +69,7 @@ class DragDropManager {
   }
 
   canDropInStatus(currentStatus, targetStatus) {
-    // Allow dropping in different status or same status for reordering
+    
     return currentStatus !== targetStatus || true
   }
 
@@ -125,7 +125,7 @@ class DragDropManager {
       `Task moved from ${this.getStatusLabel(fromStatus)} to ${this.getStatusLabel(toStatus)}`,
     )
 
-    // Emit event for parent component to handle
+    
     this.container.dispatchEvent(
       new CustomEvent("todo-status-change", {
         detail: { todoId, fromStatus, toStatus },
@@ -167,7 +167,7 @@ class DragDropManager {
         break
       case "up":
       case "down":
-        // For up/down, we could implement reordering within the same column
+        
         this.announceToScreenReader(`Use left and right arrows to move between columns`)
         return
     }
@@ -190,7 +190,7 @@ class DragDropManager {
   }
 
   announceToScreenReader(message) {
-    // Remove old announcements
+    
     this.announcements.forEach((el) => {
       if (el.parentNode) {
         el.parentNode.removeChild(el)
@@ -198,7 +198,7 @@ class DragDropManager {
     })
     this.announcements = []
 
-    // Create new announcement
+    
     const announcement = document.createElement("div")
     announcement.setAttribute("aria-live", "polite")
     announcement.setAttribute("aria-atomic", "true")
@@ -208,7 +208,7 @@ class DragDropManager {
 
     this.announcements.push(announcement)
 
-    // Clean up after announcement
+    
     setTimeout(() => {
       if (announcement.parentNode) {
         announcement.parentNode.removeChild(announcement)

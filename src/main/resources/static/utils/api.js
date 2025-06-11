@@ -1,7 +1,7 @@
 import AuthService from "./auth.js";
 
 export default class ApiService {
-  // Enhanced mock data with more comprehensive structure
+  
   static mockData = {
     config: {
       API_BASE_URL: "/api",
@@ -121,7 +121,7 @@ export default class ApiService {
   }
 
   static async mockRequest(method, endpoint, data = null) {
-    // Simulate API delay
+    
     await new Promise((resolve) => setTimeout(resolve, 300))
 
     try {
@@ -243,17 +243,17 @@ export default class ApiService {
 }
 
   static handleMockRequest(method, endpoint, data) {
-    // Config endpoint
+    
     if (endpoint === "/config") {
       return this.mockData.config
     }
 
-    // Auth endpoints
+    
     if (endpoint === "/auth/login") return this.mockLogin(data)
     if (endpoint === "/auth/signup") return this.mockSignup(data)
     if (endpoint === "/auth/verify-2fa") return this.mockVerifyTwoFactor(data)
 
-    // User management endpoints
+    
     if (endpoint === "/users") {
       if (method === "GET") return this.mockGetUsers()
       if (method === "POST") return this.mockCreateUser(data)
@@ -267,7 +267,7 @@ export default class ApiService {
       return this.mockDeleteUser(userId)
     }
 
-    // Team endpoints
+    
     if (endpoint === "/teams") {
       if (method === "GET") return this.mockGetTeams()
       if (method === "POST") return this.mockCreateTeam(data)
@@ -285,7 +285,7 @@ export default class ApiService {
       if (method === "DELETE") return this.mockRemoveTeamMember(teamId, userId)
     }
 
-    // Todo endpoints
+    
     if (endpoint === "/todos") {
       if (method === "GET") return this.mockGetTodos()
       if (method === "POST") return this.mockCreateTodo(data)
@@ -298,7 +298,7 @@ export default class ApiService {
     throw new Error("Endpoint not found")
   }
 
-  // Auth mock methods
+  
   static mockLogin(data) {
     const user = this.mockData.users.find((u) => u.username === data.username)
     if (!user) {
@@ -324,7 +324,7 @@ export default class ApiService {
       return { success: false, message: "Username already exists" }
     }
 
-    // Create new user with a valid ID (ensure it's unique)
+    
     const maxId = Math.max(...this.mockData.users.map(user => user.id), 0);
     const newId = maxId + 1;
     
@@ -358,7 +358,7 @@ export default class ApiService {
     return { success: false, message: "Invalid verification code" }
   }
 
-  // User management mock methods
+  
   static mockGetUsers() {
     const users = this.mockData.users.map((user) => ({
       id: user.id,
@@ -432,16 +432,16 @@ export default class ApiService {
       return { success: false, message: "User not found" }
     }
 
-    // Remove user from teams
+    
     this.mockData.teamMembers = this.mockData.teamMembers.filter((tm) => tm.user_id !== userId)
 
-    // Remove user
+    
     this.mockData.users.splice(userIndex, 1)
 
     return { success: true, message: "User deleted successfully" }
   }
 
-  // Team member management mock methods
+  
   static mockGetTeamMembers(teamId) {
     const teamMembers = this.mockData.teamMembers
       .filter((tm) => tm.team_id === teamId)
@@ -472,7 +472,7 @@ export default class ApiService {
       return { success: false, message: "User is already a team member" }
     }
 
-    const roleId = data.team_role_id || 2 // Default to team_member
+    const roleId = data.team_role_id || 2 
     const newMember = {
       id: this.mockData.teamMembers.length + 1,
       team_id: teamId,
@@ -534,9 +534,9 @@ export default class ApiService {
     return { success: true, message: "Team member removed successfully" }
   }
 
-  // Enhanced team methods
+  
   static mockGetTeams() {
-    const currentUser = { id: 1 } // Placeholder for AuthService.getCurrentUser();
+    const currentUser = { id: 1 } 
     if (!currentUser) {
       return { success: false, message: "Not authenticated" }
     }
@@ -557,7 +557,7 @@ export default class ApiService {
   }
 
   static mockCreateTeam(data) {
-    const currentUser = { id: 1 } // Placeholder for AuthService.getCurrentUser();
+    const currentUser = { id: 1 } 
     if (!currentUser) {
       return { success: false, message: "Not authenticated" }
     }
@@ -570,12 +570,12 @@ export default class ApiService {
 
     this.mockData.teams.push(newTeam)
 
-    // Add creator as team lead
+    
     const newMember = {
       id: this.mockData.teamMembers.length + 1,
       team_id: newTeam.id,
       user_id: currentUser.id,
-      team_role_id: 1, // team_lead
+      team_role_id: 1, 
     }
 
     this.mockData.teamMembers.push(newMember)
@@ -590,7 +590,7 @@ export default class ApiService {
     }
   }
 
-  // Todo methods (unchanged)
+  
   static mockGetTodos() {
     return { success: true, data: this.mockData.todos }
   }
@@ -603,7 +603,7 @@ export default class ApiService {
       status_name: "open",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      created_by: 1, // Placeholder for AuthService.getCurrentUser()?.id || 1
+      created_by: 1, 
     }
 
     this.mockData.todos.push(newTodo)
@@ -625,7 +625,7 @@ export default class ApiService {
     return { success: true, data: this.mockData.todos[todoIndex] }
   }
 
-  // API methods
+  
   static async get(endpoint) {
     return this.apiRequest("GET", endpoint)
   }

@@ -6,7 +6,7 @@ export default class BaseComponent extends HTMLElement {
     this.props = {}
   }
 
-  // Lifecycle methods
+  
   connectedCallback() {
     this.mount()
   }
@@ -20,14 +20,14 @@ export default class BaseComponent extends HTMLElement {
     this.onPropsChange(name, oldValue, newValue)
   }
 
-  // Override in subclasses
+  
   mount() {}
   unmount() {
     this.removeAllEventListeners()
   }
   onPropsChange(name, oldValue, newValue) {}
 
-  // State management
+  
   setState(updates) {
     const prevState = { ...this.state }
     this.state = { ...this.state, ...updates }
@@ -35,12 +35,12 @@ export default class BaseComponent extends HTMLElement {
   }
 
   onStateChange(prevState, newState) {
-    // Override in subclasses for state-based re-rendering
+    
   }
 
-  // Event handling
+  
   addEventListener(element, event, handler, options = {}) {
-    // Exit early if either element or event is invalid
+    
     if (!element || !event || typeof event !== 'string') {
       return;
     }
@@ -54,11 +54,11 @@ export default class BaseComponent extends HTMLElement {
     };
 
     try {
-      // Check if element is a valid DOM element with addEventListener method
+      
       if (element && typeof element.addEventListener === 'function') {
         element.addEventListener(event, wrappedHandler, options);
         
-        // Store for cleanup
+        
         if (!this.eventListeners.has(element)) {
           this.eventListeners.set(element, []);
         }
@@ -77,14 +77,14 @@ export default class BaseComponent extends HTMLElement {
     if (!element) return
 
     try {
-      // Check if element is a valid DOM element with removeEventListener method
+      
       if (element && typeof element.removeEventListener === 'function') {
         element.removeEventListener(event, handler)
       }
     } catch (e) {
     }
 
-    // Remove from tracking
+    
     if (this.eventListeners.has(element)) {
       const listeners = this.eventListeners.get(element)
       const index = listeners.findIndex((l) => l.event === event && l.handler === handler)
@@ -98,7 +98,7 @@ export default class BaseComponent extends HTMLElement {
     this.eventListeners.forEach((listeners, element) => {
       listeners.forEach(({ event, handler, options }) => {
         try {
-          // Check if element is a valid DOM element with removeEventListener method
+          
           if (element && typeof element.removeEventListener === 'function') {
             element.removeEventListener(event, handler, options)
           }
@@ -109,7 +109,7 @@ export default class BaseComponent extends HTMLElement {
     this.eventListeners.clear()
   }
 
-  // Custom event emission
+  
   emit(eventName, detail = {}, options = {}) {
     const event = new CustomEvent(eventName, {
       detail,
@@ -122,7 +122,7 @@ export default class BaseComponent extends HTMLElement {
     return event
   }
 
-  // DOM utilities
+  
   $(selector) {
     return this.shadowRoot ? this.shadowRoot.querySelector(selector) : this.querySelector(selector)
   }
@@ -131,7 +131,7 @@ export default class BaseComponent extends HTMLElement {
     return this.shadowRoot ? this.shadowRoot.querySelectorAll(selector) : this.querySelectorAll(selector)
   }
 
-  // Template rendering
+  
   render(template) {
     if (this.shadowRoot) {
       this.shadowRoot.innerHTML = template
@@ -140,7 +140,7 @@ export default class BaseComponent extends HTMLElement {
     }
   }
 
-  // CSS utilities
+  
   addCSS(css) {
     if (this.shadowRoot) {
       const style = document.createElement("style")
@@ -149,7 +149,7 @@ export default class BaseComponent extends HTMLElement {
     }
   }
 
-  // Attribute helpers
+  
   getBooleanAttribute(name) {
     return this.hasAttribute(name)
   }
@@ -171,17 +171,17 @@ export default class BaseComponent extends HTMLElement {
     this.setAttribute(name, String(value))
   }
 
-  // Error handling
+  
   handleError(error) {
     this.emit("error", { error, component: this })
   }
 
-  // Validation
+  
   validate() {
-    return true // Override in subclasses
+    return true 
   }
 
-  // Loading state
+  
   setLoading(loading) {
     this.setBooleanAttribute("loading", loading)
     this.emit("loading-change", { loading })
@@ -191,7 +191,7 @@ export default class BaseComponent extends HTMLElement {
     return this.getBooleanAttribute("loading")
   }
 
-  // Disabled state
+  
   setDisabled(disabled) {
     this.setBooleanAttribute("disabled", disabled)
     this.emit("disabled-change", { disabled })
@@ -201,7 +201,7 @@ export default class BaseComponent extends HTMLElement {
     return this.getBooleanAttribute("disabled")
   }
 
-  // Focus management
+  
   focus() {
     const focusable = this.$("[tabindex], input, button, select, textarea")
     if (focusable) {
@@ -211,7 +211,7 @@ export default class BaseComponent extends HTMLElement {
     }
   }
 
-  // Accessibility helpers
+  
   setAriaLabel(label) {
     this.setAttribute("aria-label", label)
   }

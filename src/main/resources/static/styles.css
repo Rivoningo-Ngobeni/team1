@@ -1,19 +1,19 @@
-/* CSS Reset and Base Styles */
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* CSS Custom Properties */
+
 :root {
   --primary-color: #000000;
   --primary-hover: #111111;
-  --secondary-color: #6b7280; /* Neutral gray */
-  --success-color: #00b37e;   /* A modern green accent */
-  --warning-color: #eab308;   /* Muted yellow */
-  --error-color: #ef4444;     /* Red with soft tone */
-  --info-color: #0ea5e9;      /* Calmer blue */
+  --secondary-color: #6b7280;
+    --success-color: #00b37e;
+    --warning-color: #eab308;
+    --error-color: #ef4444;
+    --info-color: #0ea5e9;
 
   --text-primary: #111111;
   --text-secondary: #4b5563;
@@ -54,7 +54,7 @@
   --header-height: 4rem;
 }
 
-/* Dark mode support */
+
 @media (prefers-color-scheme: dark) {
   :root {
     --primary-color: #ffffff;
@@ -81,17 +81,17 @@
   }
 }
 
-/* Base Typography */
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   line-height: 1.6;
   color: var(--text-primary);
   background-color: var(--background-color);
   font-size: var(--font-size-base);
-  -webkit-text-size-adjust: 100%; /* Prevent font scaling in landscape */
+  -webkit-text-size-adjust: 100%;
 }
 
-/* Semantic HTML Styles */
+
 main {
   flex: 1;
   padding: var(--spacing-lg);
@@ -121,7 +121,7 @@ article {
   margin-bottom: var(--spacing-md);
 }
 
-/* Fixed sidebar styling */
+
 aside {
   width: var(--sidebar-width);
   min-width: var(--sidebar-width);
@@ -142,7 +142,7 @@ footer {
   font-size: var(--font-size-sm);
 }
 
-/* Headings */
+
 h1,
 h2,
 h3,
@@ -173,7 +173,7 @@ h6 {
   font-size: var(--font-size-sm);
 }
 
-/* Layout Classes */
+
 .app-layout {
   display: flex;
   min-height: 100vh;
@@ -189,12 +189,12 @@ h6 {
   display: flex;
   flex-direction: column;
   flex: 1;
-  overflow: hidden; /* Prevent horizontal overflow */
+  overflow: hidden;
 }
 
 .content {
   flex: 1;
-  overflow-x: hidden; /* Prevent horizontal scrolling */
+  overflow-x: hidden;
 }
 
 .page-header {
@@ -212,7 +212,7 @@ h6 {
   margin-bottom: 0;
 }
 
-/* Grid System */
+
 .grid {
   display: grid;
   gap: var(--spacing-md);
@@ -231,7 +231,7 @@ h6 {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-/* Enhanced mobile responsiveness */
+
 @media (max-width: 1024px) {
   .grid-cols-4 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -288,7 +288,7 @@ h6 {
     font-size: var(--font-size-sm);
   }
   
-  /* Added flex-wrap for action buttons */
+  
   .action-btn {
     flex: 1;
     min-width: 80px;
@@ -331,7 +331,7 @@ h6 {
   }
 }
 
-/* Flexbox Utilities */
+
 .flex {
   display: flex;
 }
@@ -369,7 +369,7 @@ h6 {
   gap: var(--spacing-lg);
 }
 
-/* Spacing Utilities */
+
 .m-0 {
   margin: 0;
 }
@@ -414,7 +414,7 @@ h6 {
   padding: var(--spacing-lg);
 }
 
-/* Form Styles */
+
 .form-group {
   margin-bottom: var(--spacing-lg);
 }
@@ -439,7 +439,7 @@ h6 {
   margin-top: var(--spacing-xs);
 }
 
-/* Auth Layout */
+
 .auth-layout {
   min-height: 100vh;
   display: flex;
@@ -490,7 +490,7 @@ h6 {
   text-decoration: underline;
 }
 
-/* Table Styles */
+
 .table {
   width: 100%;
   background: var(--surface-color);
@@ -534,7 +534,7 @@ h6 {
   align-items: center;
 }
 
-/* Badge Styles */
+
 .badge {
   display: inline-flex;
   align-items: center;
@@ -547,7 +547,7 @@ h6 {
 }
 
 .badge-primary {
-  background-color: var(--primary-color); /* blue */
+  background-color: var(--primary-color);
   color: var(--text-on-primary);
 }
 
@@ -566,7 +566,7 @@ h6 {
   color: var(--text-on-error);
 }
 
-/* Status Indicators */
+
 .status-indicator {
   display: inline-flex;
   align-items: center;
@@ -590,7 +590,7 @@ h6 {
   background-color: var(--success-color);
 }
 
-/* Loading States */
+
 .loading {
   opacity: 0.6;
   pointer-events: none;
@@ -617,7 +617,7 @@ h6 {
   }
 }
 
-/* Toast Container */
+
 .toast-container {
   position: fixed;
   top: var(--spacing-md);
@@ -629,7 +629,7 @@ h6 {
   max-width: 400px;
 }
 
-/* Mobile toast improvements */
+
 @media (max-width: 768px) {
   .toast-container {
     top: auto;
@@ -639,7 +639,7 @@ h6 {
   }
 }
 
-/* Modal Overlay */
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -681,7 +681,7 @@ h6 {
   justify-content: flex-end;
 }
 
-/* Mobile modal improvements */
+
 @media (max-width: 768px) {
   .modal-overlay {
     padding: var(--spacing-sm);
@@ -706,7 +706,7 @@ h6 {
   }
 }
 
-/* Responsive Design */
+
 @media (max-width: 768px) {
   :root {
     --sidebar-width: 100%;
@@ -756,7 +756,7 @@ h6 {
     font-size: var(--font-size-sm);
   }
   
-  /* Added flex-wrap for action buttons */
+  
   .action-btn {
     flex: 1;
     min-width: 80px;
@@ -770,7 +770,7 @@ h6 {
   }
 }
 
-/* Standard input field styles */
+
 .standard-input {
   display: block;
   width: 100%;
@@ -801,7 +801,7 @@ h6 {
   cursor: not-allowed;
 }
 
-/* Accessibility */
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -814,13 +814,13 @@ h6 {
   border: 0;
 }
 
-/* Focus styles */
+
 *:focus {
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
 
-/* Skip link */
+
 .skip-link {
   position: absolute;
   top: -40px;
@@ -837,7 +837,7 @@ h6 {
   top: 6px;
 }
 
-/* High contrast mode support */
+
 @media (prefers-contrast: high) {
   :root {
     --border-color: #000000;
@@ -845,7 +845,7 @@ h6 {
   }
 }
 
-/* Reduced motion support */
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -856,7 +856,7 @@ h6 {
   }
 }
 
-/* Print styles */
+
 @media print {
   .toast-container,
   .modal-overlay,
@@ -874,7 +874,7 @@ h6 {
   }
 }
 
-/* Drag and Drop Styles */
+
 .kanban-board {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -993,13 +993,13 @@ h6 {
   margin: var(--spacing-sm);
 }
 
-/* Keyboard navigation for drag and drop */
+
 .draggable-todo:focus {
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
 
-/* View toggle */
+
 .view-toggle {
   display: flex;
   gap: var(--spacing-sm);
@@ -1027,7 +1027,7 @@ h6 {
   background: var(--surface-color);
 }
 
-/* Mobile drag and drop */
+
 @media (max-width: 768px) {
   .kanban-board {
     grid-template-columns: 1fr;
@@ -1059,7 +1059,7 @@ h6 {
     cursor: grabbing;
   }
   
-  /* Fix for header display on mobile */
+  
   header .flex {
     flex-direction: column;
     align-items: flex-start;
@@ -1075,7 +1075,7 @@ h6 {
     justify-content: space-between;
   }
   
-  /* Fix filter controls on mobile */
+  
   .view-toggle + div {
     flex-direction: column;
     width: 100%;
@@ -1090,7 +1090,7 @@ h6 {
   }
 }
 
-/* Reduced motion support */
+
 @media (prefers-reduced-motion: reduce) {
   .draggable-todo,
   .drop-zone,
@@ -1107,7 +1107,7 @@ h6 {
   }
 }
 
-/* Inline Todo Form */
+
 .todo-form-container {
   background-color: var(--surface-color);
   border-radius: var(--border-radius);
@@ -1142,7 +1142,7 @@ h6 {
   margin-top: var(--spacing-lg);
 }
 
-/* Responsive adjustments for the form */
+
 @media (max-width: 768px) {
   .todo-form-container {
     padding: var(--spacing-md);
@@ -1158,7 +1158,7 @@ h6 {
   }
 }
 
-/* Todo Form Page */
+
 .todo-page-form {
   max-width: 800px;
   margin: 0 auto;
@@ -1210,7 +1210,7 @@ h6 {
   }
 }
 
-/* Standard buttons for modals */
+
 .standard-button {
   display: inline-flex;
   align-items: center;
@@ -1256,7 +1256,7 @@ h6 {
 }
 
 .danger-button:hover {
-  background-color: #b91c1c; /* Darker red */
+  background-color: #b91c1c;
 }
 
 .danger-button:disabled {
@@ -1264,7 +1264,7 @@ h6 {
   cursor: not-allowed;
 }
 
-/* Mobile adjustments for buttons in modals */
+
 @media (max-width: 768px) {
   .modal-footer {
     flex-direction: column;
@@ -1277,8 +1277,7 @@ h6 {
   }
 }
 
-/* Native form elements styling as replacements for custom components */
-/* Button styles to replace app-button */
+
 button.btn,
 input[type="submit"].btn,
 input[type="reset"].btn,
@@ -1334,10 +1333,10 @@ input[type="button"].btn {
 
 .btn-danger:hover,
 .btn-danger:focus {
-  background-color: #b91c1c; /* Darker red */
+  background-color: #b91c1c;
 }
 
-/* Size variants */
+
 .btn-sm {
   padding: 0.4rem 0.8rem;
   font-size: var(--font-size-sm);
@@ -1357,7 +1356,7 @@ input[type="button"]:disabled,
   cursor: not-allowed;
 }
 
-/* Input/Select styles to replace app-input and app-select */
+
 .form-control {
   display: block;
   width: 100%;
@@ -1404,7 +1403,7 @@ textarea.form-control {
   resize: vertical;
 }
 
-/* Form group styling */
+
 .form-group {
   margin-bottom: var(--spacing-lg);
 }
@@ -1429,7 +1428,7 @@ textarea.form-control {
   margin-top: var(--spacing-xs);
 }
 
-/* Updated responsive styling */
+
 @media (max-width: 768px) {
   :root {
     --sidebar-width: 100%;
@@ -1459,7 +1458,7 @@ textarea.form-control {
     padding: var(--spacing-md);
   }
 
-  /* Make buttons stack on small screens */
+  
   .form-actions {
     flex-direction: column;
   }
@@ -1469,13 +1468,13 @@ textarea.form-control {
     margin-bottom: var(--spacing-sm);
   }
   
-  /* Full width controls on mobile */
+  
   .form-control {
     max-width: 100%;
   }
 }
 
-/* Navigation styling */
+
 .navigation {
   display: flex;
   flex-direction: column;
@@ -1595,7 +1594,7 @@ textarea.form-control {
   outline-offset: 2px;
 }
 
-/* Team Cards */
+
 .team-card {
   margin-bottom: var(--spacing-md);
 }

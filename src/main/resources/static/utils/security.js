@@ -1,5 +1,5 @@
 class SecurityUtils {
-  // XSS Prevention
+  
   static sanitizeText(text) {
     if (typeof text !== "string") return text
 
@@ -11,7 +11,7 @@ class SecurityUtils {
   static sanitizeHTML(html) {
     if (typeof html !== "string") return html
 
-    // Basic HTML sanitization - remove script tags and event handlers
+    
     return html
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
       .replace(/on\w+="[^"]*"/gi, "")
@@ -19,7 +19,7 @@ class SecurityUtils {
       .replace(/javascript:/gi, "")
   }
 
-  // Input Validation
+  
   static validateEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     return emailRegex.test(email)
@@ -28,7 +28,7 @@ class SecurityUtils {
   static validateUsername(username) {
     if (!username || typeof username !== "string") return false
 
-    // Username should be 3-50 characters, alphanumeric and underscores only
+    
     const usernameRegex = /^[a-zA-Z0-9_]{3,50}$/
     return usernameRegex.test(username)
   }
@@ -36,11 +36,11 @@ class SecurityUtils {
   static validatePassword(password) {
     if (!password || typeof password !== "string") return false
 
-    // Password should be at least 8 characters
+    
     return password.length >= 8
   }
 
-  // CSRF Protection
+  
   static generateCSRFToken() {
     const array = new Uint8Array(32)
     crypto.getRandomValues(array)
@@ -55,7 +55,7 @@ class SecurityUtils {
     return sessionStorage.getItem("csrf_token")
   }
 
-  // Content Security
+  
   static escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
   }
@@ -67,7 +67,7 @@ class SecurityUtils {
     return text.substring(0, maxLength - 3) + "..."
   }
 
-  // URL Validation
+  
   static isValidURL(string) {
     try {
       new URL(string)
@@ -77,7 +77,7 @@ class SecurityUtils {
     }
   }
 
-  // Rate Limiting Helper
+  
   static createRateLimiter(maxAttempts = 5, windowMs = 15 * 60 * 1000) {
     const attempts = new Map()
 
@@ -85,16 +85,16 @@ class SecurityUtils {
       const now = Date.now()
       const userAttempts = attempts.get(identifier) || []
 
-      // Remove old attempts outside the window
+      
       const validAttempts = userAttempts.filter((time) => now - time < windowMs)
 
       if (validAttempts.length >= maxAttempts) {
-        return false // Rate limited
+        return false 
       }
 
       validAttempts.push(now)
       attempts.set(identifier, validAttempts)
-      return true // Allow request
+      return true 
     }
   }
 }

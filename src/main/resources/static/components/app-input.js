@@ -1,5 +1,5 @@
-import BaseComponent from "./base-component.js";
 import SecurityUtils from "../utils/security.js";
+import BaseComponent from "./base-component.js";
 
 class AppInput extends BaseComponent {
   static get observedAttributes() {
@@ -9,14 +9,14 @@ class AppInput extends BaseComponent {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
-    //this.value = ""
+    
   }
 
   mount() {
     this.render();
     this.setupEventListeners();
 
-    // Register for form-associated custom elements
+    
     if (this.attachInternals && typeof this.attachInternals === "function") {
       this.internals = this.attachInternals();
     }
@@ -87,7 +87,7 @@ class AppInput extends BaseComponent {
           color: var(--text-muted, #9ca3af);
         }
 
-        /* Loading state */
+        
         :host([loading]) .input {
           background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 12a9 9 0 11-6.219-8.56'/%3E%3C/svg%3E");
           background-repeat: no-repeat;
@@ -101,7 +101,7 @@ class AppInput extends BaseComponent {
           to { transform: rotate(360deg); }
         }
 
-        /* Search input specific styles */
+        
         .input[type="search"] {
           background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
           background-repeat: no-repeat;
@@ -139,12 +139,12 @@ class AppInput extends BaseComponent {
     const input = this.$(".input");
     if (!input) return;
 
-    // Use direct event listeners instead of this.addEventListener wrapper
+    
     input.addEventListener("input", (e) => {
       this.value = e.target.value;
       this.emit("input", { value: this.value });
 
-      // Dispatch native input event to support form validation
+      
       this.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
     });
 
@@ -152,7 +152,7 @@ class AppInput extends BaseComponent {
       this.value = e.target.value;
       this.emit("change", { value: this.value });
 
-      // Dispatch native change event
+      
       this.dispatchEvent(
         new Event("change", { bubbles: true, composed: true })
       );
@@ -168,7 +168,7 @@ class AppInput extends BaseComponent {
     });
 
     input.addEventListener("keydown", (e) => {
-      // Special handling for Enter key on forms
+      
       if (e.key === "Enter" && this.closest("form")) {
         const submitEvent = new Event("submit", {
           bubbles: true,
@@ -243,7 +243,7 @@ class AppInput extends BaseComponent {
     if (input) input.select();
   }
 
-  // Getters and setters
+  
   get value() {
     return this._value || "";
   }

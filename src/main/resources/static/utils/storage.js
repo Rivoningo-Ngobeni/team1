@@ -3,7 +3,7 @@ class StorageService {
     this.prefix = "team_todo_"
   }
 
-  // Secure storage methods
+  
   setSecure(key, value) {
     try {
       const fullKey = this.prefix + key
@@ -45,15 +45,15 @@ class StorageService {
     sessionStorage.removeItem(fullKey)
   }
 
-  // Determine if data should be stored in session vs local storage
+  
   isSessionData(key) {
     const sessionKeys = ["auth_token", "csrf_token", "temp_data"]
     return sessionKeys.includes(key)
   }
 
-  // Cache management
+  
   setCache(key, value, ttl = 3600000) {
-    // Default 1 hour TTL
+    
     const cacheData = {
       value,
       timestamp: Date.now(),
@@ -75,7 +75,7 @@ class StorageService {
     return value
   }
 
-  // Clear all app data
+  
   clearAll() {
     const keys = Object.keys(localStorage).concat(Object.keys(sessionStorage))
     keys.forEach((key) => {
@@ -86,7 +86,7 @@ class StorageService {
     })
   }
 
-  // Storage quota management
+  
   getStorageUsage() {
     let totalSize = 0
     const keys = Object.keys(localStorage).concat(Object.keys(sessionStorage))
@@ -105,6 +105,6 @@ class StorageService {
   }
 }
 
-// Create singleton instance
+
 const storageService = new StorageService()
 export default storageService

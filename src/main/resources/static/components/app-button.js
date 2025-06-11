@@ -13,10 +13,10 @@ class AppButton extends BaseComponent {
   mount() {
     this.render()
     this.setupEventListeners()
-    // Forward click on custom element or any of its light DOM children to internal button for form submission
+    
     HTMLElement.prototype.addEventListener.call(this, "click", (e) => {
       const button = this.$(".button")
-      // Only forward if the click did not originate from the internal button
+      
       if (button && !button.contains(e.target)) {
         button.click()
       }
@@ -62,7 +62,7 @@ class AppButton extends BaseComponent {
           opacity: 0.6;
         }
 
-        /* Variants */
+        
         .button--primary {
           background-color: var(--primary-color, #2563eb);
           color: var(--text-on-primary);
@@ -101,7 +101,7 @@ class AppButton extends BaseComponent {
           background-color: var(--background-color, #f9fafb);
         }
 
-        /* Sizes */
+        
         .button--small {
           padding: 0.5rem 0.75rem;
           font-size: 0.875rem;
@@ -117,7 +117,7 @@ class AppButton extends BaseComponent {
           font-size: 1.125rem;
         }
 
-        /* Loading state */
+        
         .button--loading {
           color: transparent;
         }
@@ -149,13 +149,13 @@ class AppButton extends BaseComponent {
           }
         }
 
-        /* Icon support */
+        
         .button ::slotted(svg) {
           width: 1em;
           height: 1em;
         }
 
-        /* Ripple effect */
+        
         .button::before {
           content: '';
           position: absolute;
@@ -201,30 +201,30 @@ class AppButton extends BaseComponent {
         return
       }
       
-      // For submit buttons, find the closest form and handle the form submission
+      
       if (this.getAttribute("type") === "submit") {
         const form = this.closest("form")
         if (form) {
-          e.preventDefault() // Prevent any default navigation
+          e.preventDefault() 
           
-          // Dispatch a submit event that our handlers can catch
+          
           const submitEvent = new Event("submit", { 
             bubbles: true, 
             cancelable: true,
-            composed: true // Ensure it crosses shadow DOM boundaries
+            composed: true 
           })
           
-          // Dispatch the event and check if it was cancelled
+          
           const wasSubmitted = form.dispatchEvent(submitEvent)
           
-          // Only try form.submit() as a fallback if the event wasn't handled
-          // This helps avoid interfering with hash-based routing
+          
+          
           if (wasSubmitted) {
             try {
-              // This is our last resort if custom event handlers didn't work
-              form.requestSubmit() // Modern API that triggers submit handlers
+              
+              form.requestSubmit() 
             } catch (err) {
-              // Fallback for older browsers, but may cause page navigation
+              
               try {
                 form.submit()
               } catch (submitErr) {
@@ -234,7 +234,7 @@ class AppButton extends BaseComponent {
         }
       }
       
-      // Always dispatch a native click event from the custom element
+      
       const nativeClick = new MouseEvent("click", {
         bubbles: true,
         cancelable: true,
@@ -243,7 +243,7 @@ class AppButton extends BaseComponent {
       })
       this.dispatchEvent(nativeClick)
       
-      // Emit custom event
+      
       this.emit("click", { originalEvent: e })
     })
 
@@ -274,7 +274,7 @@ class AppButton extends BaseComponent {
     }
   }
 
-  // Getters and setters
+  
   get disabled() {
     return this.hasAttribute("disabled")
   }
