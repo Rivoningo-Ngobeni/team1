@@ -80,14 +80,16 @@ jobs:
             EOF
             
             echo "--- Reloading systemd and starting service ---"
+            sudo systemctl daemon-reexec
             sudo systemctl daemon-reload
             sudo systemctl enable $SERVICE_NAME
             sudo systemctl restart $SERVICE_NAME
             
             echo "--- Installing and configuring NGINX and Certbot ---"
             if ! command -v nginx &> /dev/null; then
-              sudo yum install -y nginx
+              sudo dnf install -y nginx
               sudo systemctl enable nginx
+              sudo systemctl start nginx
             fi
             
             if ! command -v certbot &> /dev/null; then
@@ -96,24 +98,6 @@ jobs:
               sudo python3 -m pip install certbot certbot-nginx
             fi
             
-            echo "--- Obtaining SSL certificate with Certbot ---"
-            if [ ! -d "/etc/letsencrypt/live/${{ vars.DOMAIN_NAME }}" ]; then
-              sudo certbot --nginx -d ${{ vars.DOMAIN_NAME }} --non-interactive --agree-tos --email admin@${{ vars.DOMAIN_NAME }} || {
-                echo "Error: Certbot failed to obtain certificate."
-                exit 1
-              }
-            else
-              echo "SSL certificate already exists for ${{ vars.DOMAIN_NAME }}"
-            fi
-            
-            echo "Configuring 'server_names_hash_bucket_size'..."
-            if ! grep -q "server_names_hash_bucket_size" /etc/nginx/nginx.conf; then
-              sudo sed -i '/http {/a \    server_names_hash_bucket_size 128;' /etc/nginx/nginx.conf
-            else
-              sudo sed -i 's/^\(\s*\)#\?\s*server_names_hash_bucket_size.*/\1server_names_hash_bucket_size 128;/' /etc/nginx/nginx.conf
-            fi
-            
-            NGINX_CONF="/etc/nginx/conf.d/team_one.conf"
             echo "--- Creating temporary Nginx config for Certbot ---"
             NGINX_TEMP_CONF="/etc/nginx/conf.d/team_one_temp.conf"
             sudo bash -c "cat > $NGINX_TEMP_CONF" <<EOF
@@ -123,24 +107,36 @@ jobs:
                 server_name ${{ vars.DOMAIN_NAME }};
             
                 location / {
-                    proxy_pass http://localhost:8080;
-                    proxy_set_header Host \$host;
+                    root /var/www/html;
+                    try_files \$uri \$uri/ =404;
                 }
             }
             EOF
             
-            echo "Testing and restarting Nginx for temporary config..."
+            echo "--- Setting permissions for temporary config ---"
+            sudo chmod 644 "$NGINX_TEMP_CONF"
+            sudo chown nginx:nginx "$NGINX_TEMP_CONF"
+            
+            echo "--- Verifying temporary Nginx config ---"
             if ! sudo nginx -t; then
               echo "Error: Temporary Nginx configuration test failed."
+              cat "$NGINX_TEMP_CONF"
               exit 1
             fi
-            sudo systemctl restart nginx
+            sudo systemctl reload nginx || {
+              echo "Error: Failed to reload Nginx."
+              sudo systemctl status nginx
+              exit 1
+            }
+            
+            echo "--- Debugging: Checking Nginx server blocks ---"
+            sudo nginx -T | grep server_name
             
             echo "--- Obtaining SSL certificate with Certbot ---"
             if [ ! -d "/etc/letsencrypt/live/${{ vars.DOMAIN_NAME }}" ]; then
-              sudo certbot --nginx --config-dir /etc/letsencrypt --work-dir /var/lib/letsencrypt --logs-dir /var/log/letsencrypt -d ${{ vars.DOMAIN_NAME }} --non-interactive --agree-tos --email admin@${{ vars.DOMAIN_NAME }} || {
+              sudo certbot --nginx --config-dir /etc/letsencrypt --work-dir /var/lib/letsencrypt --logs-dir /var/log/letsencrypt -d ${{ vars.DOMAIN_NAME }} --non-interactive --agree-tos --email admin@${{ vars.DOMAIN_NAME }} -v || {
                 echo "Error: Certbot failed to obtain certificate."
-                cat /var/log/letsencrypt/letsencrypt.log
+                sudo cat /var/log/letsencrypt/letsencrypt.log
                 exit 1
               }
             else
@@ -199,7 +195,20 @@ jobs:
             }
             EOF
             
-              echo "Testing and restarting Nginx..."
-              sudo nginx -t && sudo systemctl restart nginx
+            echo "--- Setting permissions for final config ---"
+            sudo chmod 644 "$NGINX_CONF"
+            sudo chown nginx:nginx "$NGINX_CONF"
             
-            echo "✅ Deployment complete. Java app is running under systemd and accessible via NGINX."
+            echo "--- Testing and restarting Nginx for final config ---"
+            if ! sudo nginx -t; then
+              echo "Error: Final Nginx configuration test failed."
+              cat "$NGINX_CONF"
+              exit 1
+            fi
+            sudo systemctl restart nginx || {
+              echo "Error: Failed to restart Nginx."
+              sudo systemctl status nginx
+              exit 1
+            }
+            
+            echo "✅ Deployment complete. Java app is running under systemd and accessible via NGINX with HTTPS."
