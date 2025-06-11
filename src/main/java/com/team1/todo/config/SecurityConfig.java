@@ -79,7 +79,7 @@ public class SecurityConfig {
                                 "/utils/config",
                                 "/favicon.ico"
                         ).permitAll()
-                        .requestMatchers(  "/**/*.woff2", "/**/*.woff", "/**/*.ttf", "/**/*.eot").permitAll()
+                        // .requestMatchers(  "/**/*.woff2", "/**/*.woff", "/**/*.ttf", "/**/*.eot").permitAll()
                         .requestMatchers("/api/config/public", "/api/config/public/**").permitAll()
                         .requestMatchers("/api/config", "/api/config/**").authenticated()
                         .anyRequest().authenticated()
