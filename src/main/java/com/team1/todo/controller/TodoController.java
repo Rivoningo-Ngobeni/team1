@@ -63,10 +63,8 @@ public class TodoController {
 
     @PostMapping({"/", ""})
     public ResponseEntity<TodoDto> createTodo(@RequestBody TodoRequestDto todoRequest) {
-        TodoStatus todoStatus = todoStatusRepository.findByName("Open").orElseThrow(() -> new RuntimeException("Todo status not found"));
+        todoRequest.setCreatedById(getCurrentUser().getId());
         Todo savedTodo = todoService.createFromDto(todoRequest);
-        savedTodo.setCreatedBy(getCurrentUser());
-        savedTodo.setStatus(todoStatus);
         return new ResponseEntity<>(TodoMapper.toDto(savedTodo), HttpStatus.CREATED);
     }
 
