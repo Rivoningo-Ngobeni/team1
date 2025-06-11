@@ -55,6 +55,7 @@ class TodoCard extends BaseComponent {
                     border-left: 4px solid ${statusColors[this.todo.status_name]};
                     position: relative;
                     cursor: grab;
+                    margin-block: var(--spacing-md);
                 }
                 
                 .todo-card:hover {
@@ -353,16 +354,6 @@ class TodoCard extends BaseComponent {
                             Delete
                         </button>
                     </footer>`
-                    : ""
-                }
-                
-                ${
-                  canEdit
-                    ? `
-                    <div class="keyboard-hint">
-                        Press Space to select, Arrow keys to move
-                    </div>
-                `
                     : ""
                 }
             </article>

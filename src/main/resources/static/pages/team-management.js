@@ -122,7 +122,6 @@ class TeamManagementPage {
     header.innerHTML = `
             <div>Username</div>
             <div>Role</div>
-            <div>Joined</div>
             <div>Actions</div>
         `
 
@@ -152,11 +151,7 @@ class TeamManagementPage {
                         text-transform: capitalize;
                     ">${SecurityUtils.sanitizeText(member.roleName.replace("_", " "))}</span>
                 </div>
-                <div class="table-cell" data-label="Joined">
-                    <span style="color: var(--text-secondary); font-size: 0.875rem;">
-                        ${SecurityUtils.sanitizeText(new Date(member.joined_at).toLocaleDateString())}
-                    </span>
-                </div>
+
                 <div class="table-cell" data-label="Actions">
                     <div class="flex gap-2">
                         <button class="standard-button" 

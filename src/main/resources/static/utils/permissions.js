@@ -1,5 +1,5 @@
-import authService from "./auth.js"
 import ApiService from "./api.js"
+import authService from "./auth.js"
 
 export default class PermissionService {
   static hasSystemRole(user, role) {
@@ -46,16 +46,36 @@ export default class PermissionService {
   }
 
   static async canEditTodo(todo, userId = null) {
-    const currentUser = userId ? { id: userId } : authService.getCurrentUser()
-    if (!currentUser) return false
+    try {
+      const currentUser = userId ? { id: userId } : authService.getCurrentUser()
+      if (!currentUser) return false
 
-    // System admins can edit any todo
-    if (this.isSystemAdmin(currentUser)) return true
+      // System admins can edit any todo
+      if (this.isSystemAdmin(currentUser)) return true
 
-    // Todo creator can edit
-    if (todo.createdBy.id === currentUser.id) return true
+      // Todo creator can edit
+      if (todo.createdBy && todo.createdBy.id === currentUser.id) return true
 
-    // Team leads can edit team todos
-    return await this.isTeamLead(todo.team.id, currentUser.id)
+      // Check if user is a team member
+      if (todo.team && todo.team.id) {
+        try {
+          // Call the API endpoint to check if the user can edit this todo
+          const response = await ApiService.get(`/api/full-todos/can-edit/${todo.id}/user/${currentUser.id}`)
+          return response === true
+        } catch (error) {
+          // Log the error but don't expose it to the component
+          console.error("Error checking todo edit permission:", error)
+          
+          // Fallback to frontend check for team membership when backend call fails
+          const teamId = todo.team.id
+          const role = await this.getTeamRole(teamId, currentUser.id)
+          return role !== null // If user has any role, they're a member
+        }
+      }
+    } catch (error) {
+      console.error("Error in canEditTodo:", error)
+    }
+
+    return false
   }
 }

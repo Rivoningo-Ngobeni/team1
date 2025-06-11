@@ -239,6 +239,7 @@ export default class ApiService {
     return responseData;
   } catch (error) {
     console.error('API request failed:', error);
+    console.error('API request failed:', error.message);
     throw error;
   }
 }

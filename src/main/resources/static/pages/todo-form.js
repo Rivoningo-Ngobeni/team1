@@ -62,14 +62,14 @@ class TodoFormPage {
     form.innerHTML = `
       <div class="form-group">
         <label for="todo-title" class="form-label">Title</label>
-        <app-input 
+        <input 
           id="todo-title"
           type="text"
+          class="form-control"
           placeholder="Enter task title"
           required
           value="${isEdit ? SecurityUtils.sanitizeText(todo.title) : ""}"
           aria-describedby="title-error">
-        </app-input>
         <div id="title-error" class="form-error" role="alert" aria-live="polite"></div>
       </div>
       
@@ -79,6 +79,7 @@ class TodoFormPage {
           id="todo-description"
           placeholder="Enter task description"
           rows="5"
+          class="form-control"
           style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--border-radius); font-family: inherit;"
           aria-describedby="description-error">${isEdit ? SecurityUtils.sanitizeText(todo.description) : ""}</textarea>
         <div id="description-error" class="form-error" role="alert" aria-live="polite"></div>
@@ -86,30 +87,40 @@ class TodoFormPage {
       
       <div class="form-group">
         <label for="todo-due-date" class="form-label">Due Date</label>
-        <app-input 
+        <input 
           id="todo-due-date"
-          type="date" 
-          value="${isEdit && todo.dueDate ? todo.dueDate.split("T")[0] : ""}"
+          type="date"
+          class="form-control"
+          value="${isEdit && todo.due_date ? todo.dueDate.split("T")[0] : ""}"
           aria-describedby="due-date-error">
-        </app-input>
         <div id="due-date-error" class="form-error" role="alert" aria-live="polite"></div>
       </div>
       
       <div class="form-group">
         <label for="todo-team" class="form-label">Team</label>
-        <app-select id="todo-team" required aria-describedby="team-error"></app-select>
+        <select id="todo-team" class="form-control" required aria-describedby="team-error">
+          <option value="">Select a team</option>
+        </select>
         <div id="team-error" class="form-error" role="alert" aria-live="polite"></div>
+      </div>
+
+      <div class="form-group" id="assigned-to-group" style="display: none;">
+        <label for="todo-assigned-to" class="form-label">Assigned To</label>
+        <select id="todo-assigned-to" class="form-control" required aria-describedby="assigned-to-error">
+          <option value="">Select a team member</option>
+        </select>
+        <div id="assigned-to-error" class="form-error" role="alert" aria-live="polite"></div>
       </div>
       
       <div class="form-actions">
         <a href="#/dashboard" class="cancel-link">
-          <app-button type="button" variant="secondary" id="cancel-btn">
+          <button type="button" class="btn btn-secondary" id="cancel-btn">
             Cancel
-          </app-button>
+          </button>
         </a>
-        <app-button type="submit" variant="primary" id="submit-btn">
+        <button type="submit" class="btn btn-primary" id="submit-btn">
           ${isEdit ? "Update" : "Create"} Task
-        </app-button>
+        </button>
       </div>
     `;
     
@@ -129,6 +140,7 @@ class TodoFormPage {
     
     // Load teams for selector
     await this.loadTeamOptions(form, isEdit ? todoId : null);
+    await this.loadUserOptions(form, isEdit ? todoId : null);
     
     // Setup event handlers
     const submitBtn = form.querySelector("#submit-btn");
@@ -156,16 +168,13 @@ class TodoFormPage {
       try {
         const todoData = this.collectFormData(form);
         console.log(todoData)
-        todoData.team = 'api/teams/' + todoData.team
-        todoData.createdBy = 'api/users/1'
-        todoData.status = "/api/todoStatuses/1"
         let response;
         
         if (isEdit) {
-          response = await ApiService.put(`/todos/${todoId}`, todoData);
+          response = await ApiService.put(`/full-todos/${todoId}`, todoData);
         } else {
-            console.log(todoData)
-          response = await ApiService.post("/todos", todoData);
+          console.log(todoData)
+          response = await ApiService.post("/full-todos", todoData);
         }
 
         ToastService.show(`Task ${isEdit ? "updated" : "created"} successfully`, "success");
@@ -189,67 +198,129 @@ class TodoFormPage {
   
   static async loadTeamOptions(form, todoId) {
     try {
-      console.log("Loading team options for todo form");
       const response = await ApiService.get("/teams");
       const teams = response._embedded.teams
         
-        const teamSelect = form.querySelector("#todo-team");
-        if (!teamSelect) {
-          console.error("Team select element not found");
-          return;
-        }
-        
-        // Format options for the select
-        const options = teams.map((team) => ({
-          value: team.id.toString(),
-          label: SecurityUtils.sanitizeText(team.name),
-        }));
-        
-        console.log("Setting team options:", options);
-        
-        // Try multiple approaches to set options and values
-        if (typeof teamSelect.setOptions === 'function') {
-          teamSelect.setOptions(options);
+      const teamSelect = form.querySelector("#todo-team");
+      if (!teamSelect) {
+        console.error("Team select element not found");
+        return;
+      }
+      
+      // Format options for the select
+      teams.forEach(team => {
+        const option = document.createElement("option");
+        option.value = team.id.toString();
+        option.textContent = SecurityUtils.sanitizeText(team.name);
+        teamSelect.appendChild(option);
+      });
+      
+      console.log("Setting team options");
+      
+      // For edit mode, set the team
+      if (todoId) {
+        console.log(`Fetching todo ${todoId} for editing`);
+        const todoResponse = await ApiService.get(`/todos/${todoId}`);
+        if (todoResponse.success && todoResponse.data && todoResponse.data.team_id) {
+          const teamId = todoResponse.data.team_id.toString();
+          console.log(`Setting selected team to: ${teamId}`);
+          teamSelect.value = teamId;
           
-          // For edit mode, set the team
-          if (todoId) {
-            console.log(`Fetching todo ${todoId} for editing`);
-            const todoResponse = await ApiService.get(`/todos/${todoId}`);
-            if (todoResponse.success && todoResponse.data && todoResponse.data.team_id) {
-              const teamId = todoResponse.data.team_id.toString();
-              console.log(`Setting selected team to: ${teamId}`);
-              teamSelect.value = teamId;
-              
-              // Double-check that the value was set
-              setTimeout(() => {
-                console.log(`Current team value: ${teamSelect.value}`);
-              }, 100);
-            }
-          } else {
-            // For create mode, use the current team from state if available
-            const currentTeam = StateManager.getState().currentTeam;
-            if (currentTeam) {
-              console.log(`Setting team from current state: ${currentTeam}`);
-              teamSelect.value = currentTeam;
-            }
-          }
-        } else {
-          console.error("setOptions method not available on team select");
+          // Load team members for the selected team
+          await this.loadTeamMembers(form, teamId);
+          
+          // Double-check that the value was set
+          setTimeout(() => {
+            console.log(`Current team value: ${teamSelect.value}`);
+          }, 100);
         }
+      } else {
+        // For create mode, use the current team from state if available
+        const currentTeam = StateManager.getState().currentTeam;
+        if (currentTeam) {
+          console.log(`Setting team from current state: ${currentTeam}`);
+          teamSelect.value = currentTeam;
+          
+          // Load team members for the selected team
+          await this.loadTeamMembers(form, currentTeam);
+        }
+      }
+      
+      // Add event listener to load team members when team selection changes
+      teamSelect.addEventListener('change', async (event) => {
+        const selectedTeamId = event.target.value;
+        if (selectedTeamId) {
+          await this.loadTeamMembers(form, selectedTeamId);
+        } else {
+          // Hide the assigned to dropdown if no team is selected
+          const assignedToGroup = form.querySelector("#assigned-to-group");
+          if (assignedToGroup) {
+            assignedToGroup.style.display = "none";
+          }
+        }
+      });
     } catch (error) {
       console.error("Error loading teams:", error);
       ToastService.show("Failed to load teams", "error");
     }
   }
+
+  static async loadTeamMembers(form, teamId) {
+    try {
+      // Show the assigned-to field group
+      const assignedToGroup = form.querySelector("#assigned-to-group");
+      if (assignedToGroup) {
+        assignedToGroup.style.display = "block";
+      }
+      
+      // Load team members for the selected team
+      const response = await ApiService.get(`/teaminfo/${teamId}/members`);
+      const teamMembers = response;
+      
+      const userSelect = form.querySelector("#todo-assigned-to");
+      if (!userSelect) {
+        console.error("User select element not found");
+        return;
+      }
+      
+      // Clear existing options except the first placeholder option
+      while (userSelect.options.length > 1) {
+        userSelect.remove(1);
+      }
+      
+      // Add new options
+      teamMembers.forEach(member => {
+        const option = document.createElement("option");
+        option.value = member.userId.toString();
+        option.textContent = SecurityUtils.sanitizeText(member.username);
+        userSelect.appendChild(option);
+      });
+    } catch (error) {
+      console.error("Error loading team members:", error);
+      ToastService.show("Failed to load team members", "error");
+    }
+  }
+
+  static async loadUserOptions(form, todoId) {
+    // This method is no longer needed as we'll load team members based on selected team
+    // We'll keep it for backward compatibility
+    if (todoId) {
+      try {
+        const todoResponse = await ApiService.get(`/todos/${todoId}`);
+        if (todoResponse && todoResponse.team_id) {
+          await this.loadTeamMembers(form, todoResponse.team_id);
+        }
+      } catch (error) {
+        console.error("Error loading todo for assigned user:", error);
+      }
+    }
+  }
   
   static validateForm(form) {
     const titleInput = form.querySelector("#todo-title");
-    const titleShadowInput = titleInput && titleInput.shadowRoot ? 
-      titleInput.shadowRoot.querySelector('.input') : null;
     const teamSelect = form.querySelector("#todo-team");
     
-    const title = titleShadowInput ? titleShadowInput.value.trim() : 
-      (titleInput ? titleInput.value.trim() : "");
+    const title = titleInput ? titleInput.value.trim() : "";
     const teamId = teamSelect ? teamSelect.value : "";
     
     let isValid = true;
@@ -275,27 +346,28 @@ class TodoFormPage {
   
   static collectFormData(form) {
     const titleInput = form.querySelector("#todo-title");
-    const titleShadowInput = titleInput && titleInput.shadowRoot ? 
-      titleInput.shadowRoot.querySelector('.input') : null;
     const descriptionInput = form.querySelector("#todo-description");
     const dueDateInput = form.querySelector("#todo-due-date");
-    const dueDateShadowInput = dueDateInput && dueDateInput.shadowRoot ? 
-      dueDateInput.shadowRoot.querySelector('.input') : null;
     const teamSelect = form.querySelector("#todo-team");
+    const assignedToSelect = form.querySelector("#todo-assigned-to");
     
-    // Get values, checking both direct and shadow DOM
-    const title = titleShadowInput ? titleShadowInput.value.trim() : 
-      (titleInput ? titleInput.value.trim() : "");
+    // Get values
+    const title = titleInput ? titleInput.value.trim() : "";
     const description = descriptionInput ? descriptionInput.value.trim() : "";
-    let dueDate = dueDateShadowInput ? dueDateShadowInput.value :
-      (dueDateInput ? dueDateInput.value : "");
+    let dueDate = dueDateInput ? dueDateInput.value : "";
     const teamId = teamSelect ? teamSelect.value : "";
-    dueDate = dueDate + "T00:00:00"
+    const assignedToId = assignedToSelect ? assignedToSelect.value : "";
+    
+    dueDate = (new Date(dueDate)).toISOString();
+    
     return {
       title,
       description,
-      team: parseInt(teamId),
+      teamId: parseInt(teamId),
       dueDate: dueDate || null,
+      assignedToId: assignedToId ? parseInt(assignedToId) : null,
+      statusId: 1,
+      createdById: 1
     };
   }
   

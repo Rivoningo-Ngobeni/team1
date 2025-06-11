@@ -105,7 +105,6 @@ class TeamCard extends BaseComponent {
                     <span>Members: ${SecurityUtils.sanitizeText(this.team.member.count) || 0}</span>
                 </div>
                 <div class="team-actions">
-                    <button class="action-btn primary" data-action="view">View Todos</button>
                     ${this.team.role_name === "team_lead" ? '<button class="action-btn" data-action="manage">Manage Members</button>' : ""}
                 </div>
             </div>

@@ -1,11 +1,21 @@
 package com.team1.todo.entity;
 
-import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "todos")
@@ -17,6 +27,7 @@ public class Todo {
     private String description;
     private LocalDateTime dueDate;
 
+    @JsonBackReference("todo-status")
     @ManyToOne(fetch = FetchType.LAZY)
     private TodoStatus status;
 
@@ -125,10 +136,10 @@ public class Todo {
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", dueDate=" + dueDate +
-                ", status=" + status +
-                ", assignedTo=" + assignedTo +
-                ", createdBy=" + createdBy +
-                ", team=" + team +
+                ", statusId=" + (status != null ? status.getId() : null) +
+                ", assignedToId=" + (assignedTo != null ? assignedTo.getId() : null) +
+                ", createdById=" + (createdBy != null ? createdBy.getId() : null) +
+                ", teamId=" + (team != null ? team.getId() : null) +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';
