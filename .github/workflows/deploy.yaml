@@ -91,11 +91,9 @@ jobs:
             fi
             
             if ! command -v certbot &> /dev/null; then
-              echo "--- Installing Certbot ---"
               echo "--- Installing Certbot via pip ---"
               sudo dnf install -y python3-pip python3-devel
-              sudo pip3 install --upgrade pip
-              sudo pip3 install certbot certbot-nginx
+              sudo python3 -m pip install certbot certbot-nginx
             fi
             
             echo "--- Obtaining SSL certificate with Certbot ---"
