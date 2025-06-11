@@ -79,27 +79,25 @@ public class SecurityConfig {
                                 "/utils/config",
                                 "/favicon.ico"
                         ).permitAll()
-                        // .requestMatchers(  "/**/*.woff2", "/**/*.woff", "/**/*.ttf", "/**/*.eot").permitAll()
                         .requestMatchers("/api/config/public", "/api/config/public/**").permitAll()
                         .requestMatchers("/api/config", "/api/config/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider());
                 http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                //         .headers(headers -> headers
-                //         .contentSecurityPolicy(csp -> csp
-                //                 .policyDirectives("default-src 'self'; " +
-                //                         "script-src 'self'; " +
-                //                         "style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; " +
-                //                         "font-src 'self' https://fonts.gstatic.com; " +
-                //                         "img-src 'self' https://cdn.example.com data:; " +
-                //                         "connect-src 'self'; " +
-                //                         "object-src 'none'; " +
-                //                         "base-uri 'self'; " +
-                //                         "frame-ancestors 'none'")
-                //         )
-                // )
-                ;
+                        .headers(headers -> headers
+                        .contentSecurityPolicy(csp -> csp
+                                .policyDirectives("default-src 'self'; " +
+                                        "script-src 'self'; " +
+                                        "style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; " +
+                                        "font-src 'self' https://fonts.gstatic.com; " +
+                                        "img-src 'self' https://cdn.example.com data:; " +
+                                        "connect-src 'self'; " +
+                                        "object-src 'none'; " +
+                                        "base-uri 'self'; " +
+                                        "frame-ancestors 'none'")
+                        )
+                );
 
 
 
@@ -111,7 +109,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(allowedOrigins);
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("Authorization",
                 "Content-Type",
                 "X-Requested-With",
