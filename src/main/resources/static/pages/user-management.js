@@ -92,7 +92,6 @@ export default class UserManagementPage {
         this.allUsers = response
         this.renderUsers(this.allUsers)
     } catch (error) {
-    console.log(error)
       container.innerHTML =
         '<div style="text-align: center; padding: 2rem; color: var(--error-color);">Failed to load users</div>'
       ToastService.show("Failed to load users", "error")

@@ -107,7 +107,6 @@ class Router {
           this.afterRouteChange(hash)
         }
       } catch (error) {
-        console.error("Route handler error:", error)
         this.navigate("/404")
       }
     }

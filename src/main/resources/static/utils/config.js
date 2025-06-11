@@ -24,7 +24,6 @@ export default class ConfigService {
       this.publicConfigIsLoaded = true
       return this.config
     } catch (error) {
-      console.error("Public config loading error:", error);
     }
   }
 
@@ -43,7 +42,6 @@ export default class ConfigService {
       this.isLoaded = true
       return this.config
     } catch (error) {
-      console.error("Config loading error:", error)
       // Fallback to default config
       this.config = this.getDefaultConfig()
       this.isLoaded = true

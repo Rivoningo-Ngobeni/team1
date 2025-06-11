@@ -121,7 +121,6 @@ class TeamCard extends BaseComponent {
           try {
             window.TeamsPage.handleTeamAction(action, this.team.id);
           } catch (error) {
-            console.error('Error calling TeamsPage handler:', error);
           }
         }
       })

@@ -20,7 +20,6 @@ export default class PermissionService {
         const member = response.find((m) => m.userId === currentUser.id)
         return member ? member.roleName : null
     } catch (error) {
-      console.error("Error getting team role:", error)
     }
     return null
   }
@@ -64,7 +63,6 @@ export default class PermissionService {
           return response === true
         } catch (error) {
           // Log the error but don't expose it to the component
-          console.error("Error checking todo edit permission:", error)
           
           // Fallback to frontend check for team membership when backend call fails
           const teamId = todo.team.id
@@ -73,7 +71,6 @@ export default class PermissionService {
         }
       }
     } catch (error) {
-      console.error("Error in canEditTodo:", error)
     }
 
     return false

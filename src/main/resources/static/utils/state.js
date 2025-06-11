@@ -88,7 +88,6 @@ class StateManager {
         try {
           callback(newState, prevState, updates)
         } catch (error) {
-          console.error("State subscriber error:", error)
         }
       })
     }
@@ -101,7 +100,6 @@ class StateManager {
           try {
             callback(currentValue, newState, prevState)
           } catch (error) {
-            console.error("State subscriber error:", error)
           }
         })
       }
@@ -141,7 +139,6 @@ class StateManager {
       try {
         middleware(prevState, newState, updates)
       } catch (error) {
-        console.error("Middleware error:", error)
       }
     })
   }
@@ -188,7 +185,6 @@ class StateManager {
     try {
       localStorage.setItem(key, JSON.stringify(this.state))
     } catch (error) {
-      console.error("State persistence error:", error)
     }
   }
 
@@ -200,23 +196,11 @@ class StateManager {
         this.notifySubscribers({}, this.state, this.state)
       }
     } catch (error) {
-      console.error("State restoration error:", error)
     }
   }
 }
 
 // Create singleton instance
 const stateManager = new StateManager()
-
-// // Add logging middleware in development
-// if (process.env.NODE_ENV === "development") {
-//   stateManager.addMiddleware((prevState, newState, updates) => {
-//     console.group("State Update")
-//     console.log("Previous:", prevState)
-//     console.log("Updates:", updates)
-//     console.log("New:", newState)
-//     console.groupEnd()
-//   })
-// }
 
 export default stateManager

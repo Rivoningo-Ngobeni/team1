@@ -159,7 +159,6 @@ class TeamsPage {
           this.renderTeams(this.teamsList)
         }
     } catch (error) {
-        console.log(error)
       teamsContainer.innerHTML = `
                 <div class="col-span-full text-center p-8">
                     <div class="error-message">Error loading teams. Please try again later.</div>

@@ -15,7 +15,6 @@ class TodoFormPage {
         const response = await ApiService.get(`/full-todos/${todoId}`);
         todo = response;
       } catch (error) {
-        console.error("Error fetching todo:", error);
         ToastService.show("Could not load task data", "error");
         Router.navigate("/dashboard");
         return;
@@ -147,7 +146,6 @@ class TodoFormPage {
     if (cancelBtn) {
       // Direct click handler on the app-button element
       cancelBtn.addEventListener("click", (e) => {
-        console.log("Cancel button clicked");
         window.location.href = "#/dashboard";
       });
     }
@@ -164,20 +162,17 @@ class TodoFormPage {
       
       try {
         const todoData = this.collectFormData(form);
-        console.log(todoData)
         let response;
         
         if (isEdit) {
           response = await ApiService.put(`/full-todos/${todoId}`, todoData);
         } else {
-          console.log(todoData)
           response = await ApiService.post("/full-todos", todoData);
         }
 
         ToastService.show(`Task ${isEdit ? "updated" : "created"} successfully`, "success");
         Router.navigate("/dashboard");
       } catch (error) {
-        console.error("Form submission error:", error);
         ToastService.show(`An error occurred while ${isEdit ? "updating" : "creating"} the task`, "error");
       } finally {
         submitBtn.removeAttribute("loading");
@@ -200,7 +195,6 @@ class TodoFormPage {
         
       const teamSelect = form.querySelector("#todo-team");
       if (!teamSelect) {
-        console.error("Team select element not found");
         return;
       }
       
@@ -212,30 +206,21 @@ class TodoFormPage {
         teamSelect.appendChild(option);
       });
       
-      console.log("Setting team options");
       
       // For edit mode, set the team
       if (todoId) {
-        console.log(`Fetching todo ${todoId} for editing`);
         const todoResponse = await ApiService.get(`/todos/${todoId}`);
         if (todoResponse.success && todoResponse.data && todoResponse.data.team_id) {
           const teamId = todoResponse.data.team_id.toString();
-          console.log(`Setting selected team to: ${teamId}`);
           teamSelect.value = teamId;
           
           // Load team members for the selected team
           await this.loadTeamMembers(form, teamId);
-          
-          // Double-check that the value was set
-          setTimeout(() => {
-            console.log(`Current team value: ${teamSelect.value}`);
-          }, 100);
         }
       } else {
         // For create mode, use the current team from state if available
         const currentTeam = StateManager.getState().currentTeam;
         if (currentTeam) {
-          console.log(`Setting team from current state: ${currentTeam}`);
           teamSelect.value = currentTeam;
           
           // Load team members for the selected team
@@ -257,7 +242,6 @@ class TodoFormPage {
         }
       });
     } catch (error) {
-      console.error("Error loading teams:", error);
       ToastService.show("Failed to load teams", "error");
     }
   }
@@ -276,7 +260,6 @@ class TodoFormPage {
       
       const userSelect = form.querySelector("#todo-assigned-to");
       if (!userSelect) {
-        console.error("User select element not found");
         return;
       }
       
@@ -293,7 +276,6 @@ class TodoFormPage {
         userSelect.appendChild(option);
       });
     } catch (error) {
-      console.error("Error loading team members:", error);
       ToastService.show("Failed to load team members", "error");
     }
   }
@@ -308,7 +290,6 @@ class TodoFormPage {
           await this.loadTeamMembers(form, todoResponse.team_id);
         }
       } catch (error) {
-        console.error("Error loading todo for assigned user:", error);
       }
     }
   }

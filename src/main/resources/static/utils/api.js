@@ -238,8 +238,6 @@ export default class ApiService {
 
     return responseData;
   } catch (error) {
-    console.error('API request failed:', error);
-    console.error('API request failed:', error.message);
     throw error;
   }
 }
@@ -320,11 +318,9 @@ export default class ApiService {
   }
 
   static mockSignup(data) {
-    console.log("Processing signup request:", data);
     
     const existingUser = this.mockData.users.find((u) => u.username === data.username)
     if (existingUser) {
-      console.log("Username already exists:", data.username);
       return { success: false, message: "Username already exists" }
     }
 
@@ -342,7 +338,6 @@ export default class ApiService {
       system_roles: ["todo_user"],
     }
 
-    console.log("Creating new user:", newUser.username, "with ID:", newId);
     this.mockData.users.push(newUser)
     return { success: true, message: "Account created successfully" }
   }

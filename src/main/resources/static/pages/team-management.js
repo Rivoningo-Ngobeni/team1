@@ -11,7 +11,6 @@ class TeamManagementPage {
   static async render(teamId) {
     this.currentTeam = teamId ? Number.parseInt(teamId) : null
 
-    console.log(teamId)
 
     if (!this.currentTeam) {
       Router.navigate("/teams")
@@ -128,7 +127,6 @@ class TeamManagementPage {
     table.appendChild(header)
 
     const currentUser = AuthService.getCurrentUser();
-    console.log("Current user:", currentUser);
 
     members.forEach((member) => {
       const row = document.createElement("div")
@@ -178,7 +176,6 @@ class TeamManagementPage {
       btn.addEventListener("click", (e) => {
         const action = e.target.getAttribute("data-action")
         const userId = Number.parseInt(e.target.getAttribute("data-user-id"))
-        console.log(`Button clicked: ${action} for user ID ${userId}`);
         this.handleMemberAction(action, userId)
       })
     })
@@ -186,11 +183,9 @@ class TeamManagementPage {
 
   static async handleMemberAction(action, userId) {
     if (!userId) {
-      console.error("Missing user ID for action:", action);
       return;
     }
     
-    console.log(`Handling member action: ${action} for user ${userId}`);
     
     switch (action) {
       case "change-role":
@@ -282,18 +277,15 @@ class TeamManagementPage {
         submitBtn.disabled = true;
 
         try {
-          console.log(`Adding team member: ${username} with role ${roleName} to team ${this.currentTeam}`);
           const response = await ApiService.post(`/teaminfo/${this.currentTeam}/add-member`, {
             username,
             roleName,
           })
 
-            console.log("Team member added successfully");
             ToastService.show("Team member added successfully", "success");
             removeModal();
             await TeamManagementPage.loadTeamMembers();
         } catch (error) {
-          console.error("Error adding team member:", error);
           ToastService.show("Failed to add team member", "error");
           submitBtn.textContent = "Add Member";
           submitBtn.disabled = false;
@@ -309,7 +301,6 @@ class TeamManagementPage {
   }
 
   static showChangeRoleForm(userId) {
-    console.log(`Showing change role form for user ${userId}`);
     
     const modal = document.createElement("div")
     modal.id = "change-role-modal";
@@ -375,18 +366,15 @@ class TeamManagementPage {
         submitBtn.disabled = true;
 
         try {
-          console.log(`Updating role to ${roleName} for user ${userId} in team ${this.currentTeam}`);
           const response = await ApiService.put(`/teaminfo/${this.currentTeam}/update-role`, {
             roleName,
             userId
           })
 
-            console.log("Member role updated successfully");
             ToastService.show("Member role updated successfully", "success");
             removeModal();
             await TeamManagementPage.loadTeamMembers();
         } catch (error) {
-          console.error("Error updating member role:", error);
           ToastService.show("Failed to update member role", "error");
           submitBtn.textContent = "Update Role";
           submitBtn.disabled = false;
@@ -402,7 +390,6 @@ class TeamManagementPage {
   }
 
   static showRemoveMemberConfirm(userId) {
-    console.log(`Showing remove member confirmation for user ${userId}`);
     
     const modal = document.createElement("div")
     modal.id = "remove-member-modal";
@@ -458,15 +445,12 @@ class TeamManagementPage {
         confirmBtn.disabled = true;
 
         try {
-          console.log(`Removing user ${userId} from team ${this.currentTeam}`);
           const response = await ApiService.delete(`/teaminfo/${this.currentTeam}/members/${userId}`);
 
-            console.log("Team member removed successfully");
             removeModal();
             ToastService.show("Team member removed successfully", "success");
             await TeamManagementPage.loadTeamMembers();
         } catch (error) {
-          console.error("Error removing team member:", error);
           ToastService.show("Failed to remove team member", "error");
           confirmBtn.textContent = "Remove Member";
           confirmBtn.disabled = false;

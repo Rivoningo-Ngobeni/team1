@@ -11,7 +11,6 @@ class TotpSetupPage {
   static totpSecret = null
 
   static render(payload) {
-    console.log("TOTP Setup Page initialized with payload:", payload);
     
     // Store payload data for use during setup
     if (payload) {
@@ -280,7 +279,6 @@ class TotpSetupPage {
   static async verifyCode() {
     const codeInput = document.getElementById('verification-code');
     if (!codeInput) {
-      console.error("Verification code input not found");
       return;
     }
     
@@ -323,7 +321,6 @@ class TotpSetupPage {
       targetStep.style.display = '';
       targetStep.classList.remove('hidden');
     } else {
-      console.error(`Step ${stepNumber} element not found`);
     }
     
     TotpSetupPage.currentStep = stepNumber;
@@ -347,7 +344,6 @@ class TotpSetupPage {
   static showLoading(buttonId, text) {
     const button = document.getElementById(buttonId);
     if (!button) {
-      console.error(`Button with id ${buttonId} not found`);
       return;
     }
     
@@ -358,7 +354,6 @@ class TotpSetupPage {
   static hideLoading(buttonId, originalText) {
     const button = document.getElementById(buttonId);
     if (!button) {
-      console.error(`Button with id ${buttonId} not found`);
       return;
     }
     

@@ -176,7 +176,6 @@ class AuthService {
         return false
       }
     } catch (error) {
-      console.error("Token refresh error:", error)
       this.logout()
       return false
     }
@@ -215,7 +214,6 @@ class AuthService {
         window.dispatchEvent(new CustomEvent("auth:session-expired"))
       }
     } catch (error) {
-      console.error("Session validation error:", error)
     }
   }
 
