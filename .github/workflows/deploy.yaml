@@ -92,13 +92,10 @@ jobs:
             
             if ! command -v certbot &> /dev/null; then
               echo "--- Installing Certbot ---"
-              sudo dnf install -y snapd
-              sudo systemctl enable --now snapd.socket
-              sudo ln -s /var/lib/snapd/snap /snap
-              sudo snap install core
-              sudo snap refresh core
-              sudo snap install --classic certbot
-              sudo ln -s /snap/bin/certbot /usr/bin/certbot
+              echo "--- Installing Certbot via pip ---"
+              sudo dnf install -y python3-pip python3-devel
+              sudo pip3 install --upgrade pip
+              sudo pip3 install certbot certbot-nginx
             fi
             
             echo "--- Obtaining SSL certificate with Certbot ---"
