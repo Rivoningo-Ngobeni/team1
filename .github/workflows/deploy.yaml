@@ -114,7 +114,51 @@ jobs:
             fi
             
             NGINX_CONF="/etc/nginx/conf.d/team_one.conf"
-            echo "Creating Nginx config file: $NGINX_CONF"
+            echo "--- Creating temporary Nginx config for Certbot ---"
+            NGINX_TEMP_CONF="/etc/nginx/conf.d/team_one_temp.conf"
+            sudo bash -c "cat > $NGINX_TEMP_CONF" <<EOF
+            server {
+                listen 80;
+                listen [::]:80;
+                server_name ${{ vars.DOMAIN_NAME }};
+            
+                location / {
+                    proxy_pass http://localhost:8080;
+                    proxy_set_header Host \$host;
+                }
+            }
+            EOF
+            
+            echo "Testing and restarting Nginx for temporary config..."
+            if ! sudo nginx -t; then
+              echo "Error: Temporary Nginx configuration test failed."
+              exit 1
+            fi
+            sudo systemctl restart nginx
+            
+            echo "--- Obtaining SSL certificate with Certbot ---"
+            if [ ! -d "/etc/letsencrypt/live/${{ vars.DOMAIN_NAME }}" ]; then
+              sudo certbot --nginx --config-dir /etc/letsencrypt --work-dir /var/lib/letsencrypt --logs-dir /var/log/letsencrypt -d ${{ vars.DOMAIN_NAME }} --non-interactive --agree-tos --email admin@${{ vars.DOMAIN_NAME }} || {
+                echo "Error: Certbot failed to obtain certificate."
+                cat /var/log/letsencrypt/letsencrypt.log
+                exit 1
+              }
+            else
+              echo "SSL certificate already exists for ${{ vars.DOMAIN_NAME }}"
+            fi
+            
+            echo "--- Removing temporary Nginx config ---"
+            sudo rm -f "$NGINX_TEMP_CONF"
+            
+            echo "Configuring 'server_names_hash_bucket_size'..."
+            if ! grep -q "server_names_hash_bucket_size" /etc/nginx/nginx.conf; then
+              sudo sed -i '/http {/a \    server_names_hash_bucket_size 128;' /etc/nginx/nginx.conf
+            else
+              sudo sed -i 's/^\(\s*\)#\?\s*server_names_hash_bucket_size.*/\1server_names_hash_bucket_size 128;/' /etc/nginx/nginx.conf
+            fi
+            
+            NGINX_CONF="/etc/nginx/conf.d/team_one.conf"
+            echo "Creating final Nginx config file: $NGINX_CONF"
             sudo bash -c "cat > $NGINX_CONF" <<EOF
             # HTTP server block (redirects to HTTPS)
             server {
