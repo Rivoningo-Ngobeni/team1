@@ -64,7 +64,7 @@ public class AuthService {
         username = username.toLowerCase().trim();
 
         if (userRepository.findByUsername(username).isPresent()) {
-            throw new SecurityException("Registration failed");
+            throw new SecurityException("Username already exists");
         }
 
         try {
@@ -81,7 +81,7 @@ public class AuthService {
             return userService.createUserWithDefaultSystemRole(user);
 
         } catch (Exception e) {
-            throw new SecurityException("Registration failed");
+            throw new SecurityException(e);
         }
     }
 
