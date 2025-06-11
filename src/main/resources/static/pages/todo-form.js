@@ -39,9 +39,6 @@ class TodoFormPage {
           <p class="page-subtitle">${isEdit ? "Update task details" : "Add a new task to your list"}</p>
         </div>
         <div>
-          <app-button type="button" variant="secondary" id="back-to-dashboard" onclick="window.Router.navigate('/dashboard')">
-            Back to Dashboard
-          </app-button>
         </div>
       </div>
     `;

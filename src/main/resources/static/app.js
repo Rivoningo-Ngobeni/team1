@@ -200,9 +200,6 @@ class App {
                             The page you're looking for doesn't exist or has been moved.
                         </p>
                         <footer>
-                            <app-button variant="primary" onclick="window.Router.navigate('/dashboard')">
-                                Go to Dashboard
-                            </app-button>
                         </footer>
                     </article>
                 </div>
