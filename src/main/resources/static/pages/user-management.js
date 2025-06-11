@@ -152,11 +152,6 @@ export default class UserManagementPage {
           <div class="table-cell" data-label="Actions">
             <div class="flex gap-2">
               <button class="btn btn-secondary btn-sm" data-action="edit" data-user-id="${user.id}">Edit</button>
-              ${
-                user.id !== AuthService.getCurrentUser()?.id
-                  ? `<button class="btn btn-danger btn-sm" data-action="delete" data-user-id="${user.id}">Delete</button>`
-                  : ""
-              }
             </div>
           </div>
       `
@@ -377,7 +372,6 @@ export default class UserManagementPage {
     modal.appendChild(content)
 
     const cancelBtn = content.querySelector("#cancel-btn")
-    const deleteBtn = content.querySelector("#delete-btn")
 
     cancelBtn.addEventListener("click", () => {
       document.body.removeChild(modal)
@@ -386,22 +380,6 @@ export default class UserManagementPage {
     modal.addEventListener("click", (e) => {
       if (e.target === modal) {
         document.body.removeChild(modal)
-      }
-    })
-
-    deleteBtn.addEventListener("click", async () => {
-      deleteBtn.disabled = true
-      deleteBtn.textContent = "Deleting..."
-
-      try {
-        const response = await ApiService.delete(`/users/${userId}`)
-          ToastService.show("User deleted successfully", "success")
-          document.body.removeChild(modal)
-          this.loadUsers()
-      } catch (error) {
-        ToastService.show(`An error occurred: deleting user`, "error")
-        deleteBtn.disabled = false
-        deleteBtn.textContent = "Delete User"
       }
     })
   }
