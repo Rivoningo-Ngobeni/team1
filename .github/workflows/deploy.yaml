@@ -104,7 +104,7 @@ jobs:
             server {
                 listen 80;
                 listen [::]:80;
-                server_name ${{ vars.DOMAIN_NAME }};
+                server_name ${{ vars.DOMAIN_NAME }} www.${{ vars.DOMAIN_NAME }};
             
                 location / {
                     root /var/www/html;
@@ -123,8 +123,8 @@ jobs:
               cat "$NGINX_TEMP_CONF"
               exit 1
             fi
-            sudo systemctl reload nginx || {
-              echo "Error: Failed to reload Nginx."
+            sudo systemctl restart nginx || {
+              echo "Error: Failed to restart Nginx."
               sudo systemctl status nginx
               exit 1
             }
@@ -134,7 +134,7 @@ jobs:
             
             echo "--- Obtaining SSL certificate with Certbot ---"
             if [ ! -d "/etc/letsencrypt/live/${{ vars.DOMAIN_NAME }}" ]; then
-              sudo certbot --nginx --config-dir /etc/letsencrypt --work-dir /var/lib/letsencrypt --logs-dir /var/log/letsencrypt -d ${{ vars.DOMAIN_NAME }} --non-interactive --agree-tos --email admin@${{ vars.DOMAIN_NAME }} -v || {
+              sudo certbot --nginx --config-dir /etc/letsencrypt --work-dir /var/lib/letsencrypt --logs-dir /var/log/letsencrypt -d ${{ vars.DOMAIN_NAME }} -d www.${{ vars.DOMAIN_NAME }} --non-interactive --agree-tos --email admin@${{ vars.DOMAIN_NAME }} -v || {
                 echo "Error: Certbot failed to obtain certificate."
                 sudo cat /var/log/letsencrypt/letsencrypt.log
                 exit 1
@@ -160,17 +160,17 @@ jobs:
             server {
                 listen 80;
                 listen [::]:80;
-                server_name ${{ vars.DOMAIN_NAME }};
+                server_name ${{ vars.DOMAIN_NAME }} www.${{ vars.DOMAIN_NAME }};
             
-                # Redirect all HTTP traffic to HTTPS
-                return 301 https://\$host\$request_uri;
+                # Redirect all HTTP traffic to HTTPS (non-www)
+                return 301 https://${{ vars.DOMAIN_NAME }}\$request_uri;
             }
             
             # HTTPS server block
             server {
                 listen 443 ssl;
                 listen [::]:443 ssl;
-                server_name ${{ vars.DOMAIN_NAME }};
+                server_name ${{ vars.DOMAIN_NAME }} www.${{ vars.DOMAIN_NAME }};
             
                 # SSL certificate paths
                 ssl_certificate /etc/letsencrypt/live/${{ vars.DOMAIN_NAME }}/fullchain.pem;
@@ -180,6 +180,11 @@ jobs:
                 ssl_protocols TLSv1.2 TLSv1.3;
                 ssl_prefer_server_ciphers on;
                 ssl_ciphers EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH;
+            
+                # Redirect www to non-www
+                if (\$host = www.${{ vars.DOMAIN_NAME }}) {
+                    return 301 https://${{ vars.DOMAIN_NAME }}\$request_uri;
+                }
             
                 location / {
                     proxy_pass http://localhost:8080;
