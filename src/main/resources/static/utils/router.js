@@ -8,12 +8,12 @@ class Router {
   }
 
   init() {
-    // Handle hash changes in the URL
+    
     window.addEventListener("hashchange", () => {
       this.handleRoute()
     })
 
-    // Handle initial route
+    
     this.handleRoute()
   }
 
@@ -28,7 +28,7 @@ class Router {
   navigate(path, payload = undefined, replace = false) {
     if (path === this.currentPath) return;
 
-    // Call before route change hook
+    
     if (this.beforeRouteChange) {
       const shouldContinue = this.beforeRouteChange(this.currentPath, path)
       if (shouldContinue === false) return
@@ -36,12 +36,12 @@ class Router {
 
     this.currentPath = path
     
-    // Ensure path starts with "/" if not already
+    
     if (path && !path.startsWith('/')) {
       path = '/' + path;
     }
     
-    // Correctly format the hash URL (prevent ?# issue)
+    
     const newURL = window.location.pathname + window.location.search + '#' + path;
     
     if (replace) {
@@ -54,14 +54,14 @@ class Router {
   }
 
   handleRoute(payload = undefined) {
-    // Extract path from hash without the "#" prefix
+    
     const hash = window.location.hash.replace(/^#\/?/, "/") || "/"
     this.currentPath = hash
 
-    // Update document title based on route
+    
     this.updateDocumentTitle(hash)
 
-    // Check authentication for protected routes
+    
     const protectedRoutes = ["/dashboard", "/teams", "/admin"]
     const isProtectedRoute = protectedRoutes.some((route) => hash.startsWith(route))
 
@@ -70,7 +70,7 @@ class Router {
       return
     }
 
-    // Redirect authenticated users away from auth pages
+    
     const authRoutes = ["/login", "/signup", "/two-factor", "/totp-setup"]
     const isAuthRoute = authRoutes.includes(hash)
 
@@ -79,10 +79,10 @@ class Router {
       return
     }
 
-    // Try exact match first
+    
     let handler = this.routes[hash]
 
-    // Try regex routes if no exact match
+    
     if (!handler) {
       for (const route of this.regexRoutes) {
         const match = hash.match(route.pattern)
@@ -93,7 +93,7 @@ class Router {
       }
     }
 
-    // Fallback to 404
+    
     if (!handler) {
       handler = this.routes["/404"]
     }
@@ -102,7 +102,7 @@ class Router {
       try {
         handler(payload)
 
-        // Call after route change hook
+        
         if (this.afterRouteChange) {
           this.afterRouteChange(hash)
         }
@@ -126,7 +126,7 @@ class Router {
 
     let title = titles[path]
 
-    // Handle dynamic routes
+    
     if (!title) {
       if (path.includes("/teams/") && path.includes("/manage")) {
         title = "Team Management - Team Todo App"
@@ -152,7 +152,7 @@ class Router {
     this.afterRouteChange = callback
   }
 
-  // Utility methods
+  
   getQueryParams() {
     const params = new URLSearchParams(window.location.search)
     const result = {}
@@ -175,6 +175,6 @@ class Router {
   }
 }
 
-// Create singleton instance
+
 const router = new Router()
 export default router

@@ -1,5 +1,5 @@
-import BaseComponent from "./base-component.js"
-import SecurityUtils from "../utils/security.js"; 
+import SecurityUtils from "../utils/security.js";
+import BaseComponent from "./base-component.js";
 
 class AppToast extends BaseComponent {
   static get observedAttributes() {
@@ -170,7 +170,7 @@ class AppToast extends BaseComponent {
           animation: slideOut 0.3s ease-in forwards;
         }
 
-        /* Reduced motion support */
+        
         @media (prefers-reduced-motion: reduce) {
           .toast {
             animation: none;
@@ -214,7 +214,7 @@ class AppToast extends BaseComponent {
       })
     }
 
-    // Pause auto-hide on hover
+    
     const toast = this.$(".toast")
     this.addEventListener(toast, "mouseenter", () => {
       this.pauseAutoHide()
@@ -262,7 +262,7 @@ class AppToast extends BaseComponent {
     const progressBar = this.$(".progress-bar")
     if (progressBar) {
       progressBar.style.transition = `width ${duration}ms linear`
-      // Use setTimeout to ensure the transition starts
+      
       setTimeout(() => {
         progressBar.style.width = "0%"
       }, 10)
@@ -292,7 +292,7 @@ class AppToast extends BaseComponent {
     if (toast) {
       toast.classList.add("toast--dismissing")
 
-      // Wait for animation to complete
+      
       setTimeout(() => {
         this.emit("dismiss")
         if (this.parentNode) {
@@ -311,7 +311,7 @@ class AppToast extends BaseComponent {
     }
   }
 
-  // Getters and setters
+  
   get message() {
     return this.getAttribute("message") || ""
   }
@@ -337,7 +337,7 @@ class AppToast extends BaseComponent {
   }
 }
 
-// Toast Service for easy toast management
+
 class ToastService {
   static container = null
 
@@ -363,8 +363,8 @@ class ToastService {
 
     container.appendChild(toast)
 
-    // Auto-remove from DOM after dismissal
-    // Use HTMLElement.prototype.addEventListener to ensure we're calling the native method
+    
+    
     HTMLElement.prototype.addEventListener.call(toast, "dismiss", () => {
       if (container.contains(toast)) {
         container.removeChild(toast)
@@ -400,5 +400,6 @@ class ToastService {
 
 customElements.define("app-toast", AppToast)
 
-// Export both the AppToast component and the ToastService
-export { AppToast as default, ToastService }
+
+export { ToastService, AppToast as default };
+

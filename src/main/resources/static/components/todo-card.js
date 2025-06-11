@@ -28,7 +28,7 @@ class TodoCard extends BaseComponent {
     const currentUser = AuthService.getCurrentUser()
     const canEdit = await PermissionService.canEditTodo(this.todo, currentUser?.id)
     
-    // Only make draggable in kanban view (check if it has the draggable-todo class)
+    
     const isKanbanView = this.classList.contains('draggable-todo')
 
     const statusColors = {
@@ -208,7 +208,7 @@ class TodoCard extends BaseComponent {
                     background-color: var(--primary-hover);
                 }
                 
-                /* Specific status button colors */
+                
                 .action-btn[data-action="toggle-status"].open {
                     background-color: var(--info-color);
                     color: var(--text-on-primary);
@@ -368,7 +368,7 @@ class TodoCard extends BaseComponent {
     const card = this.shadowRoot.querySelector(".todo-card")
     if (!card) return
 
-    // Mouse/touch drag events
+    
     card.addEventListener("dragstart", (e) => {
       this.isDragging = true
       card.classList.add("dragging")
@@ -382,7 +382,7 @@ class TodoCard extends BaseComponent {
         }),
       )
 
-      // Create custom drag image
+      
       const dragImage = card.cloneNode(true)
       dragImage.style.transform = "rotate(5deg)"
       dragImage.style.opacity = "0.8"
@@ -400,7 +400,7 @@ class TodoCard extends BaseComponent {
       this.emit("drag-end", { todoId: this.todo.id })
     })
 
-    // Prevent default drag behavior on action buttons
+    
     this.shadowRoot.querySelectorAll(".action-btn").forEach((btn) => {
       btn.addEventListener("dragstart", (e) => {
         e.preventDefault()
@@ -456,7 +456,7 @@ class TodoCard extends BaseComponent {
   }
 
   setupActionHandlers() {
-    // Add action handlers for buttons with improved event handling
+    
     const actionButtons = this.shadowRoot.querySelectorAll(".action-btn");
     
     if (!actionButtons || actionButtons.length === 0) {
@@ -464,20 +464,20 @@ class TodoCard extends BaseComponent {
     }
     
     actionButtons.forEach((btn) => {
-      // Remove any existing event listeners to avoid duplicates
+      
       const newBtn = btn.cloneNode(true);
       btn.parentNode.replaceChild(newBtn, btn);
       
-      // Add the event listener to the new button - using a simpler approach
-      // to avoid multiple triggers
+      
+      
       const action = newBtn.getAttribute("data-action");
       
       newBtn.addEventListener("click", (e) => {
         e.preventDefault();
-        e.stopPropagation(); // Prevent drag events
+        e.stopPropagation(); 
         
         
-        // Use only one approach - the most reliable one - direct global call
+        
         if (window.DashboardPage) {
           switch(action) {
             case "toggle-status":

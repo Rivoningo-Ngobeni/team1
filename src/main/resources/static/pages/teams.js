@@ -14,7 +14,7 @@ class TeamsPage {
     const app = document.getElementById("app")
     app.innerHTML = ""
 
-    // Add CSS for highlighting user's teams
+    
     const style = document.createElement("style")
     style.textContent = `
       .user-team-card {
@@ -38,22 +38,22 @@ class TeamsPage {
     `
     document.head.appendChild(style)
 
-    // Create main layout
+    
     const layout = document.createElement("div")
     layout.className = "main-layout"
 
-    // Sidebar navigation
+    
     const sidebar = document.createElement("aside")
     sidebar.setAttribute("role", "navigation")
     sidebar.setAttribute("aria-label", "Main navigation")
     const navigation = document.createElement("app-navigation")
     sidebar.appendChild(navigation)
 
-    // Main content
+    
     const content = document.createElement("div")
     content.className = "content"
 
-    // Header
+    
     const header = document.createElement("header")
     header.setAttribute("role", "banner")
     header.innerHTML = `
@@ -70,13 +70,13 @@ class TeamsPage {
             </div>
         `
 
-    // Main content area
+    
     const main = document.createElement("main")
     main.id = "main-content"
     main.setAttribute("role", "main")
     main.setAttribute("aria-label", "Teams content")
 
-    // Search and filter
+    
     const searchContainer = document.createElement("div")
     searchContainer.className = "flex items-center justify-between mb-4"
     searchContainer.innerHTML = `
@@ -91,14 +91,14 @@ class TeamsPage {
             </div>
         `
 
-    // Teams container
+    
     const teamsContainer = document.createElement("div")
     teamsContainer.id = "teams-container"
     teamsContainer.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
     teamsContainer.setAttribute("role", "list")
     teamsContainer.setAttribute("aria-label", "Teams list")
 
-    // Assemble the page
+    
     main.appendChild(searchContainer)
     main.appendChild(teamsContainer)
     content.appendChild(header)
@@ -107,23 +107,23 @@ class TeamsPage {
     layout.appendChild(content)
     app.appendChild(layout)
 
-    // Setup listeners and load data
+    
     this.setupEventListeners()
     await this.loadTeams()
   }
 
   static setupEventListeners() {
-    // Create team button
+    
     document
       .getElementById("create-team-btn")
       ?.addEventListener("click", () => this.showCreateTeamModal())
 
-    // Search input
+    
     document
       .getElementById("search-input")
       ?.addEventListener("input", (e) => this.filterTeams(e.target.value))
       
-    // My teams filter
+    
     document
       .getElementById("my-teams-filter")
       ?.addEventListener("change", (e) => this.filterMyTeams(e.target.checked))
@@ -172,11 +172,11 @@ class TeamsPage {
     const teamsContainer = document.getElementById("teams-container")
     teamsContainer.innerHTML = ""
     
-    // Get the current user
+    
     const currentUser = AuthService.getCurrentUser()
     
     teams.forEach(async (team) => {
-      // Check if the current user is a member of this team
+      
       const isUserMember = team.members.some(member => member.userId === currentUser?.id)
       const isTeamLead = await PermissionService.isTeamLead(team.teamId)
       
@@ -184,7 +184,7 @@ class TeamsPage {
       teamCard.className = "team-card"
       teamCard.setAttribute("role", "listitem")
       
-      // Add a class to highlight teams the user is a part of
+      
       if (isUserMember) {
         teamCard.classList.add("user-team")
       }
@@ -250,7 +250,7 @@ class TeamsPage {
       const isUserTeam = card.classList.contains('user-team')
       const matchesTeamFilter = !this.showOnlyMyTeams || isUserTeam
       
-      // Both filters must pass
+      
       const isVisible = matchesSearch && matchesTeamFilter
       card.style.display = isVisible ? "" : "none"
     })
@@ -286,7 +286,7 @@ class TeamsPage {
 
     document.body.appendChild(modal)
 
-    // Event listeners
+    
     const createForm = document.getElementById("create-team-form")
     const teamNameInput = document.getElementById("team-name")
     const cancelBtn = document.getElementById("cancel-btn")
@@ -308,7 +308,7 @@ class TeamsPage {
     createBtn.addEventListener("click", async () => {
       const teamName = teamNameInput.value.trim()
 
-      // Validate
+      
       if (teamName.length < 3) {
         teamNameError.textContent = "Team name must be at least 3 characters"
         return

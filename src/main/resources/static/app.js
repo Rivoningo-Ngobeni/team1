@@ -12,14 +12,14 @@ import AuthService from "./utils/auth.js"
 import ConfigService from "./utils/config.js"
 import Router from "./utils/router.js"
 
-// Initialize the application
+
 class App {
   static async init() {
     try {
-      // Load configuration first
+      
       await ConfigService.loadPublicConfig()
 
-      // Setup routes with payload support
+      
       Router.addRoute("/login", (payload) => LoginPage.render(payload))
       Router.addRoute("/signup", (payload) => SignupPage.render(payload))
       Router.addRoute("/totp-setup", (payload) => TotpSetupPage.render(payload))
@@ -36,44 +36,44 @@ class App {
         }
       })
 
-      // Add new todo form routes
+      
       Router.addRoute("/todos/create", () => TodoFormPage.render())
       Router.addRoute(/^\/todos\/(\d+)\/edit$/, (match) => {
         const todoId = match[1]
         TodoFormPage.render(todoId)
       })
 
-      // Add dynamic team management routes
+      
       Router.addRoute(/^\/teams\/(\d+)\/manage$/, (match) => {
         const teamId = match[1]
         TeamManagementPage.render(teamId)
       })
 
-      // Make services globally available
+      
       window.AuthService = AuthService
       window.Router = Router
       window.ToastService = ToastService
 
-      // Initialize router
+      
       Router.init()
 
-      // Global error handling
+      
       window.addEventListener("error", (e) => {
         ToastService.show("An unexpected error occurred", "error")
       })
 
-      // Global unhandled promise rejection handling
+      
       window.addEventListener("unhandledrejection", (e) => {
         ToastService.show("An unexpected error occurred", "error")
       })
 
-      // Auto-logout warning
+      
       this.setupAutoLogoutWarning()
 
-      // Setup accessibility features
+      
       this.setupAccessibility()
 
-      // Setup session monitoring
+      
       this.setupSessionMonitoring()
     } catch (error) {
       ToastService.show("Failed to initialize application", "error")
@@ -81,18 +81,18 @@ class App {
   }
 
   static setupAutoLogoutWarning() {
-    const warningTime = ConfigService.get("AUTO_LOGOUT_WARNING", 300000) // 5 minutes
-    const sessionTimeout = ConfigService.get("SESSION_TIMEOUT", 3600000) // 1 hour
+    const warningTime = ConfigService.get("AUTO_LOGOUT_WARNING", 300000) 
+    const sessionTimeout = ConfigService.get("SESSION_TIMEOUT", 3600000) 
 
     if (AuthService.isAuthenticated()) {
-      // Show warning before auto-logout
+      
       setTimeout(() => {
         if (AuthService.isAuthenticated()) {
           ToastService.show("Your session will expire soon. Please save your work.", "warning", 10000)
         }
       }, sessionTimeout - warningTime)
 
-      // Auto-logout
+      
       setTimeout(() => {
         if (AuthService.isAuthenticated()) {
           AuthService.logout()
@@ -104,7 +104,7 @@ class App {
   }
 
   static setupAccessibility() {
-    // Keyboard navigation for modals
+    
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         const modal = document.querySelector(".modal-overlay")
@@ -117,13 +117,13 @@ class App {
       }
     })
 
-    // Focus management for dynamic content
+    
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.type === "childList") {
           mutation.addedNodes.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE) {
-              // Auto-focus first interactive element in modals
+              
               if (node.classList?.contains("modal-overlay")) {
                 const firstInput = node.querySelector("input, button, select, textarea")
                 if (firstInput) {
@@ -141,7 +141,7 @@ class App {
       subtree: true,
     })
 
-    // Announce route changes to screen readers
+    
     Router.setAfterRouteChange((path) => {
       const pageTitle = document.querySelector("h1")?.textContent || "Page"
       this.announceToScreenReader(`Navigated to ${pageTitle}`)
@@ -149,18 +149,18 @@ class App {
   }
 
   static setupSessionMonitoring() {
-    // Listen for session expiry events
+    
     window.addEventListener("auth:session-expired", () => {
       ToastService.show("Your session has expired. Please log in again.", "warning")
       Router.navigate("/login")
     })
 
-    // Monitor authentication state changes
+    
     let wasAuthenticated = AuthService.isAuthenticated()
     setInterval(() => {
       const isAuthenticated = AuthService.isAuthenticated()
       if (wasAuthenticated && !isAuthenticated) {
-        // User was logged out
+        
         Router.navigate("/login")
         ToastService.show("You have been logged out.", "info")
       }
@@ -205,7 +205,7 @@ class App {
   }
 }
 
-// Start the application when DOM is loaded
+
 document.addEventListener("DOMContentLoaded", () => {
   App.init()
 })

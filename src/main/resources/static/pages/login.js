@@ -12,7 +12,7 @@ class LoginPage {
       LoginPage.username = payload.username
     }
 
-    // Create semantic structure
+    
     const layout = document.createElement("div")
     layout.className = "auth-layout"
     layout.setAttribute("role", "main")
@@ -74,7 +74,7 @@ class LoginPage {
     layout.appendChild(card)
     app.appendChild(layout)
 
-    // Setup form handling
+    
     this.setupFormHandling(form)
   }
 
@@ -83,12 +83,12 @@ class LoginPage {
     const passwordInput = form.querySelector("#password")
     const submitButton = form.querySelector("button[type='submit']")
 
-    // Pre-fill username if we have one stored
+    
     if (LoginPage.username && usernameInput) {
       usernameInput.value = LoginPage.username
     }
 
-    // Real-time validation
+    
     if (usernameInput) {
       usernameInput.addEventListener("input", () => {
         this.validateUsername(usernameInput)
@@ -100,7 +100,7 @@ class LoginPage {
       })
     }
 
-    // Form submission
+    
     form.addEventListener("submit", async (e) => {
       e.preventDefault()
 
@@ -127,12 +127,12 @@ class LoginPage {
     })
   }
 
-  // Update the validation methods to work with standard inputs
+  
   static validateUsername(input) {
     const value = input.value.trim()
     const errorElement = document.getElementById("username-error")
     
-    // Clear previous error
+    
     errorElement.textContent = ""
     errorElement.style.display = "none"
     input.setAttribute("aria-invalid", "false")
@@ -158,7 +158,7 @@ class LoginPage {
     const value = input.value
     const errorElement = document.getElementById("password-error")
     
-    // Clear previous error
+    
     errorElement.textContent = ""
     errorElement.style.display = "none"
     input.setAttribute("aria-invalid", "false")
@@ -173,7 +173,7 @@ class LoginPage {
     return true
   }
 
-  // We can simplify these methods since we're using standard inputs
+  
   static validateForm(form) {
     const usernameInput = form.querySelector("#username")
     const passwordInput = form.querySelector("#password")

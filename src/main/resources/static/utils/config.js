@@ -42,7 +42,7 @@ export default class ConfigService {
       this.isLoaded = true
       return this.config
     } catch (error) {
-      // Fallback to default config
+      
       this.config = this.getDefaultConfig()
       this.isLoaded = true
       return this.config
@@ -53,8 +53,8 @@ export default class ConfigService {
     return {
       apiBaseUrl: `${window.location.origin}/api`,
       APP_NAME: "Team Todo App",
-      SESSION_TIMEOUT: 3600000, // 1 hour
-      MAX_FILE_SIZE: 5242880, // 5MB
+      SESSION_TIMEOUT: 3600000, 
+      MAX_FILE_SIZE: 5242880, 
       SUPPORTED_FILE_TYPES: [],
       PAGINATION_SIZE: 20,
       PASSWORD_MIN_LENGTH: 8,
@@ -65,7 +65,7 @@ export default class ConfigService {
       TEAM_NAME_MAX_LENGTH: 100,
       TWO_FA_ISSUER: "Team Todo App",
       TOAST_DURATION: 5000,
-      AUTO_LOGOUT_WARNING: 300000, // 5 minutes before logout
+      AUTO_LOGOUT_WARNING: 300000, 
       THEME_OPTIONS: ["light", "dark", "auto"],
       DEFAULT_THEME: "light",
     }

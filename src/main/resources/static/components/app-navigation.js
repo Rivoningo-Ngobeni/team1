@@ -12,7 +12,7 @@ class AppNavigation extends HTMLElement {
     this.render()
     this.updateActiveLink()
 
-    // Listen for route changes
+    
     window.addEventListener("popstate", () => {
       this.updateActiveLink()
     })
@@ -98,7 +98,7 @@ class AppNavigation extends HTMLElement {
       </nav>
     `
 
-    // Add click handlers
+    
     this.querySelectorAll(".nav-link").forEach((link) => {
       link.addEventListener("click", (e) => {
         e.preventDefault()

@@ -19,7 +19,7 @@ class TwoFactorPage {
       TwoFactorPage.password = password
     }
 
-    // Create semantic structure
+    
     const layout = document.createElement("div")
     layout.className = "auth-layout"
     layout.setAttribute("role", "main")
@@ -72,7 +72,7 @@ class TwoFactorPage {
     layout.appendChild(card)
     app.appendChild(layout)
 
-    // Setup form handling
+    
     this.setupFormHandling(form)
   }
 
@@ -80,9 +80,9 @@ class TwoFactorPage {
     const codeInput = form.querySelector("#verification-code")
     const submitButton = form.querySelector('button[type="submit"]')
 
-    // Auto-format input (numbers only)
+    
     codeInput.addEventListener("input", (e) => {
-      let value = e.target.value.replace(/\D/g, "") // Remove non-digits
+      let value = e.target.value.replace(/\D/g, "") 
       if (value.length > 6) {
         value = value.slice(0, 6)
       }
@@ -90,18 +90,18 @@ class TwoFactorPage {
 
       this.validateCode(codeInput)
 
-      // Auto-submit when 6 digits are entered
+      
       if (value.length === 6) {
         form.dispatchEvent(new Event("submit"))
       }
     })
 
-    // Real-time validation
+    
     codeInput.addEventListener("blur", () => {
       this.validateCode(codeInput)
     })
 
-    // Form submission
+    
     form.addEventListener("submit", async (e) => {
       e.preventDefault()
 
@@ -132,7 +132,7 @@ class TwoFactorPage {
       }
     })
 
-    // Focus the input on load
+    
     setTimeout(() => codeInput.focus(), 100)
   }
 

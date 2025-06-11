@@ -9,7 +9,7 @@ class TodoFormPage {
     const isEdit = !!todoId;
     let todo = null;
     
-    // For edit mode, fetch the todo data
+    
     if (isEdit) {
       try {
         const response = await ApiService.get(`/full-todos/${todoId}`);
@@ -24,11 +24,11 @@ class TodoFormPage {
     const app = document.getElementById("app");
     app.innerHTML = "";
     
-    // Create semantic structure
+    
     const layout = document.createElement("div");
     layout.className = "content-layout";
     
-    // Header
+    
     const header = document.createElement("header");
     header.setAttribute("role", "banner");
     header.innerHTML = `
@@ -42,16 +42,16 @@ class TodoFormPage {
       </div>
     `;
     
-    // Main content
+    
     const main = document.createElement("main");
     main.id = "main-content";
     main.setAttribute("role", "main");
     
-    // Form container
+    
     const formContainer = document.createElement("div");
     formContainer.className = "todo-page-form";
     
-    // Create the form
+    
     const form = document.createElement("form");
     form.className = "form-container";
     form.setAttribute("novalidate", "");
@@ -127,30 +127,30 @@ class TodoFormPage {
     layout.appendChild(main);
     app.appendChild(layout);
     
-    // Setup form handlers
+    
     this.setupFormHandlers(form, todoId);
   }
   
   static async setupFormHandlers(form, todoId) {
     const isEdit = !!todoId;
     
-    // Load teams for selector
+    
     await this.loadTeamOptions(form, isEdit ? todoId : null);
     await this.loadUserOptions(form, isEdit ? todoId : null);
     
-    // Setup event handlers
+    
     const submitBtn = form.querySelector("#submit-btn");
     const cancelBtn = form.querySelector("#cancel-btn");
     
-    // Handle cancel button
+    
     if (cancelBtn) {
-      // Direct click handler on the app-button element
+      
       cancelBtn.addEventListener("click", (e) => {
         window.location.href = "#/dashboard";
       });
     }
     
-    // Form submission
+    
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       
@@ -179,7 +179,7 @@ class TodoFormPage {
       }
     });
     
-    // Focus on the title input
+    
     setTimeout(() => {
       const titleInput = form.querySelector("#todo-title");
       if (titleInput) {
@@ -198,7 +198,7 @@ class TodoFormPage {
         return;
       }
       
-      // Format options for the select
+      
       teams.forEach(team => {
         const option = document.createElement("option");
         option.value = team.id.toString();
@@ -207,34 +207,34 @@ class TodoFormPage {
       });
       
       
-      // For edit mode, set the team
+      
       if (todoId) {
         const todoResponse = await ApiService.get(`/todos/${todoId}`);
         if (todoResponse.success && todoResponse.data && todoResponse.data.team_id) {
           const teamId = todoResponse.data.team_id.toString();
           teamSelect.value = teamId;
           
-          // Load team members for the selected team
+          
           await this.loadTeamMembers(form, teamId);
         }
       } else {
-        // For create mode, use the current team from state if available
+        
         const currentTeam = StateManager.getState().currentTeam;
         if (currentTeam) {
           teamSelect.value = currentTeam;
           
-          // Load team members for the selected team
+          
           await this.loadTeamMembers(form, currentTeam);
         }
       }
       
-      // Add event listener to load team members when team selection changes
+      
       teamSelect.addEventListener('change', async (event) => {
         const selectedTeamId = event.target.value;
         if (selectedTeamId) {
           await this.loadTeamMembers(form, selectedTeamId);
         } else {
-          // Hide the assigned to dropdown if no team is selected
+          
           const assignedToGroup = form.querySelector("#assigned-to-group");
           if (assignedToGroup) {
             assignedToGroup.style.display = "none";
@@ -248,13 +248,13 @@ class TodoFormPage {
 
   static async loadTeamMembers(form, teamId) {
     try {
-      // Show the assigned-to field group
+      
       const assignedToGroup = form.querySelector("#assigned-to-group");
       if (assignedToGroup) {
         assignedToGroup.style.display = "block";
       }
       
-      // Load team members for the selected team
+      
       const response = await ApiService.get(`/teaminfo/${teamId}/members`);
       const teamMembers = response;
       
@@ -263,12 +263,12 @@ class TodoFormPage {
         return;
       }
       
-      // Clear existing options except the first placeholder option
+      
       while (userSelect.options.length > 1) {
         userSelect.remove(1);
       }
       
-      // Add new options
+      
       teamMembers.forEach(member => {
         const option = document.createElement("option");
         option.value = member.userId.toString();
@@ -281,8 +281,8 @@ class TodoFormPage {
   }
 
   static async loadUserOptions(form, todoId) {
-    // This method is no longer needed as we'll load team members based on selected team
-    // We'll keep it for backward compatibility
+    
+    
     if (todoId) {
       try {
         const todoResponse = await ApiService.get(`/todos/${todoId}`);
@@ -303,7 +303,7 @@ class TodoFormPage {
     
     let isValid = true;
     
-    // Validate title
+    
     if (!title) {
       this.showFieldError(titleInput, "title-error", "Title is required");
       isValid = false;
@@ -311,7 +311,7 @@ class TodoFormPage {
       this.clearFieldError(titleInput, "title-error");
     }
     
-    // Validate team
+    
     if (!teamId) {
       this.showFieldError(teamSelect, "team-error", "Please select a team");
       isValid = false;
@@ -329,7 +329,7 @@ class TodoFormPage {
     const teamSelect = form.querySelector("#todo-team");
     const assignedToSelect = form.querySelector("#todo-assigned-to");
     
-    // Get values
+    
     const title = titleInput ? titleInput.value.trim() : "";
     const description = descriptionInput ? descriptionInput.value.trim() : "";
     let dueDate = dueDateInput ? dueDateInput.value : "";

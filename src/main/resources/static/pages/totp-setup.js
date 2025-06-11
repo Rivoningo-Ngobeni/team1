@@ -12,7 +12,7 @@ class TotpSetupPage {
 
   static render(payload) {
     
-    // Store payload data for use during setup
+    
     if (payload) {
       TotpSetupPage.username = payload.username;
       TotpSetupPage.qrCodeUrl = payload.qrCodeUrl;
@@ -23,7 +23,7 @@ class TotpSetupPage {
     const app = document.getElementById("app");
     app.innerHTML = "";
 
-    // Add hidden class definition if not defined globally
+    
     const style = document.createElement('style');
     style.textContent = `
       .hidden {
@@ -32,7 +32,7 @@ class TotpSetupPage {
     `;
     document.head.appendChild(style);
 
-    // Create semantic structure
+    
     const layout = document.createElement("div");
     layout.className = "auth-layout";
     layout.setAttribute("role", "main");
@@ -47,12 +47,12 @@ class TotpSetupPage {
       <p class="auth-subtitle">Add an extra layer of security to your account</p>
     `;
 
-    // Step 1: Generate QR Code
+    
     const step1 = document.createElement("div");
     step1.id = "step-1";
     step1.className = "form-group";
     
-    // If we already have QR code data from signup, show it directly
+    
     step1.innerHTML = `
     <p class="mb-4">Your two-factor authentication is ready to set up.</p>
     <div class="flex justify-center">
@@ -63,7 +63,7 @@ class TotpSetupPage {
     `;
 
 
-    // Step 2: Scan QR Code
+    
     const step2 = document.createElement("div");
     step2.id = "step-2";
     step2.className = "form-group hidden";
@@ -95,7 +95,7 @@ class TotpSetupPage {
       </button>
     `;
 
-    // Step 3: Verify Code
+    
     const step3 = document.createElement("div");
     step3.id = "step-3";
     step3.className = "form-group hidden";
@@ -127,7 +127,7 @@ class TotpSetupPage {
       </div>
     `;
 
-    // Step 4: Success
+    
     const step4 = document.createElement("div");
     step4.id = "step-4";
     step4.className = "form-group hidden";
@@ -144,7 +144,7 @@ class TotpSetupPage {
       </div>
     `;
 
-    // Append all elements
+    
     card.appendChild(header);
     card.appendChild(step1);
     card.appendChild(step2);
@@ -157,7 +157,7 @@ class TotpSetupPage {
   }
 
   static initialize() {
-    // Make sure only step 1 is visible initially
+    
     for (let i = 1; i <= 4; i++) {
       const step = document.getElementById(`step-${i}`);
       if (step) {
@@ -176,17 +176,17 @@ class TotpSetupPage {
   }
   
   static initializeEventListeners() {    
-    // Direct DOM button references
+    
     const generateQrBtn = document.getElementById('generate-qr-btn');
     const continueBtn = document.getElementById('continue-btn');
     const verifyBtn = document.getElementById('verify-btn');
     const backBtn = document.getElementById('back-btn');
     const doneBtn = document.getElementById('done-btn');
     
-    // Use direct function references instead of arrow functions
+    
     if (generateQrBtn) {
       generateQrBtn.onclick = function() {
-        // If we already have QR code data from signup, skip generation
+        
         if (TotpSetupPage.qrCodeImage || TotpSetupPage.qrCodeUrl) {
           TotpSetupPage.displayExistingQRCode();
         } else {
@@ -220,31 +220,31 @@ class TotpSetupPage {
       };
     }
     
-    // Auto-format verification code input
+    
     const codeInput = document.getElementById('verification-code');
     if (codeInput) {
-      // Handle input events for standard HTML input
+      
       codeInput.addEventListener("input", (e) => {
         let value = e.target.value;
-        value = value.replace(/\D/g, "") // Remove non-digits
+        value = value.replace(/\D/g, "") 
         if (value.length > 6) {
           value = value.slice(0, 6);
         }
         
-        // Update the value
+        
         codeInput.value = value;
         
-        // Validate the code
+        
         TotpSetupPage.validateCode(codeInput);
         
-        // Auto-submit when 6 digits are entered
+        
         if (value.length === 6) {
           const verifyBtn = document.getElementById('verify-btn');
           if (verifyBtn) verifyBtn.click();
         }
       });
       
-      // Also validate on blur
+      
       codeInput.addEventListener("blur", () => {
         TotpSetupPage.validateCode(codeInput);
       });
@@ -257,7 +257,7 @@ class TotpSetupPage {
     
     if (qrCodeElement) {
       if (TotpSetupPage.qrCodeImage) {
-        // If we have an image, use it
+        
         qrCodeElement.innerHTML = `<img id="qr-code-image" src="" alt="QR Code" style="width: 180px; height: 180px;">`;
         const qrCodeImage = document.getElementById('qr-code-image');
         qrCodeImage.src = `data:image/png;base64,${TotpSetupPage.qrCodeImage}`;
@@ -266,12 +266,12 @@ class TotpSetupPage {
       }
     }
     
-    // Display secret key if available
+    
     if (secretKeyElement && TotpSetupPage.totpSecret) {
       secretKeyElement.textContent = TotpSetupPage.totpSecret;
     }
     
-    // Show step 2
+    
     TotpSetupPage.showStep(2);
     ToastService.show("QR code ready for scanning", "success");
   }
@@ -282,12 +282,12 @@ class TotpSetupPage {
       return;
     }
     
-    // Validate the code first
+    
     if (!TotpSetupPage.validateCode(codeInput)) {
       return;
     }
     
-    // Get the code value
+    
     const code = codeInput.value.trim();
     
     TotpSetupPage.showLoading('verify-btn', 'Verifying...');
@@ -306,7 +306,7 @@ class TotpSetupPage {
   }
 
   static showStep(stepNumber) { 
-    // Hide all steps
+    
     for (let i = 1; i <= 4; i++) {
       const step = document.getElementById(`step-${i}`);
       if (step) {
@@ -315,7 +315,7 @@ class TotpSetupPage {
       }
     }
     
-    // Show target step
+    
     const targetStep = document.getElementById(`step-${stepNumber}`);
     if (targetStep) {
       targetStep.style.display = '';
@@ -336,8 +336,8 @@ class TotpSetupPage {
   }
 
   static mockVerifyCode(code) {
-    // Mock verification - in real implementation, this would verify against TOTP algorithm
-    // For demo purposes, accept any 6-digit code that isn't "000000"
+    
+    
     return code !== '000000' && /^\d{6}$/.test(code);
   }
 
@@ -366,20 +366,20 @@ class TotpSetupPage {
   }
 
   static finish() {
-    // Create a payload with the data you want to pass back
+    
     const payload = {
       setupComplete: true,
       username: TotpSetupPage.username,
     };
     
-    // Show success message
+    
     ToastService.show("Two-factor authentication setup complete! Please login.", "success");
     
-    // Navigate to login with the payload
+    
     Router.navigate("/login", payload);
   }
 
-  // Add these validation methods to match the two-factor page
+  
   static validateCode(input) {
     const value = input.value ? input.value.trim() : "";
     const errorElement = document.getElementById("code-error");
@@ -406,7 +406,7 @@ class TotpSetupPage {
       errorElement.textContent = message;
       errorElement.style.display = "block";
     } else {
-      // Fallback to toast if no error element
+      
       ToastService.show(message, "error");
     }
   }

@@ -8,7 +8,7 @@ class SignupPage {
     const app = document.getElementById("app")
     app.innerHTML = ""
 
-    // Create semantic structure
+    
     const layout = document.createElement("div")
     layout.className = "auth-layout"
     layout.setAttribute("role", "main")
@@ -81,7 +81,7 @@ class SignupPage {
     layout.appendChild(card)
     app.appendChild(layout)
 
-    // Setup form handling
+    
     this.setupFormHandling(form)
   }
 
@@ -95,27 +95,27 @@ class SignupPage {
     const passwordError = form.querySelector("#password-error")
     const confirmPasswordError = form.querySelector("#confirm-password-error")
 
-    // Validate username while typing
+    
     usernameInput.addEventListener("input", () => {
       this.validateUsername(usernameInput)
     })
 
-    // Validate password while typing
+    
     passwordInput.addEventListener("input", () => {
       this.validatePassword(passwordInput)
 
-      // Also check confirm password if it has content
+      
       if (confirmPasswordInput.value) {
         this.validateConfirmPassword(passwordInput, confirmPasswordInput)
       }
     })
 
-    // Validate confirm password while typing
+    
     confirmPasswordInput.addEventListener("input", () => {
       this.validateConfirmPassword(passwordInput, confirmPasswordInput)
     })
 
-    // Form submission
+    
     form.addEventListener("submit", async (e) => {
       e.preventDefault()
 
@@ -150,7 +150,7 @@ class SignupPage {
     const username = usernameInput.value.trim()
     const errorElement = document.getElementById("username-error")
     
-    // Clear previous error
+    
     errorElement.textContent = ""
     errorElement.style.display = "none"
     usernameInput.setAttribute("aria-invalid", "false")
@@ -176,7 +176,7 @@ class SignupPage {
     const password = passwordInput.value
     const errorElement = document.getElementById("password-error")
     
-    // Clear previous error
+    
     errorElement.textContent = ""
     errorElement.style.display = "none"
     passwordInput.setAttribute("aria-invalid", "false")
@@ -203,7 +203,7 @@ class SignupPage {
     const confirmPassword = confirmPasswordInput.value
     const errorElement = document.getElementById("confirm-password-error")
     
-    // Clear previous error
+    
     errorElement.textContent = ""
     errorElement.style.display = "none"
     confirmPasswordInput.setAttribute("aria-invalid", "false")
@@ -238,7 +238,7 @@ class SignupPage {
   }
 }
 
-// Make SignupPage available globally for direct function calls
+
 window.SignupPage = SignupPage
 
 export default SignupPage

@@ -20,18 +20,18 @@ export default class UserManagementPage {
     const layout = document.createElement("div")
     layout.className = "main-layout"
 
-    // Sidebar
+    
     const sidebar = document.createElement("aside")
     sidebar.setAttribute("role", "navigation")
     sidebar.setAttribute("aria-label", "Main navigation")
     const navigation = document.createElement("app-navigation")
     sidebar.appendChild(navigation)
 
-    // Main content
+    
     const content = document.createElement("div")
     content.className = "content-layout"
 
-    // Header
+    
     const header = document.createElement("header")
     header.setAttribute("role", "banner")
     header.innerHTML = `
@@ -44,12 +44,12 @@ export default class UserManagementPage {
         `
 
 
-    // Main content area
+    
     const main = document.createElement("main")
     main.setAttribute("role", "main")
     main.setAttribute("aria-label", "User management content")
 
-    // Search bar
+    
     const searchContainer = document.createElement("div")
     searchContainer.className = "flex items-center justify-between mb-6"
     searchContainer.innerHTML = `
@@ -61,7 +61,7 @@ export default class UserManagementPage {
     const usersContainer = document.createElement("div")
     usersContainer.id = "users-container"
 
-    // Assemble the page
+    
     main.appendChild(searchContainer)
     main.appendChild(usersContainer)
     content.appendChild(header)
@@ -70,15 +70,15 @@ export default class UserManagementPage {
     layout.appendChild(content)
     app.appendChild(layout)
 
-    // Setup event listeners
-//    const createUserBtn = document.getElementById("create-user-btn")
+    
+
     const searchInput = document.getElementById("search-input")
 
     searchInput.addEventListener("input", (e) => {
       this.filterUsers(e.target.value)
     })
 
-    // Load users
+    
     await this.loadUsers()
   }
 
@@ -166,7 +166,7 @@ export default class UserManagementPage {
 
     container.appendChild(table)
 
-    // Add event listeners for action buttons
+    
     container.querySelectorAll("button[data-action]").forEach((btn) => {
       btn.addEventListener("click", (e) => {
         const action = e.target.getAttribute("data-action")
@@ -266,7 +266,7 @@ export default class UserManagementPage {
     modal.appendChild(form)
     document.body.appendChild(modal)
 
-    // Add event listeners
+    
     const cancelBtn = form.querySelector("#cancel-btn")
     const saveBtn = form.querySelector("#save-btn")
     const usernameField = form.querySelector("#username")
@@ -285,18 +285,18 @@ export default class UserManagementPage {
     })
 
     saveBtn.addEventListener("click", async () => {
-      // Validate inputs
+      
       const username = usernameField.value.trim()
       const password = passwordField ? passwordField.value : null
 
       const usernameError = form.querySelector("#username-error")
       const passwordError = passwordField ? form.querySelector("#password-error") : null
 
-      // Reset errors
+      
       usernameError.textContent = ""
       if (passwordError) passwordError.textContent = ""
 
-      // Validation
+      
       let isValid = true
       if (username.length < 3) {
         usernameError.textContent = "Username must be at least 3 characters"

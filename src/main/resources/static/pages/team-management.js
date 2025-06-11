@@ -17,9 +17,9 @@ class TeamManagementPage {
       return
     }
 
-    // Check permissions
+    
     const canManage = await PermissionService.canManageTeam(this.currentTeam)
-    // add '!' to canManage
+    
     if (!canManage) {
       Router.navigate("/teams")
       ToastService.show("Access denied", "error")
@@ -32,13 +32,13 @@ class TeamManagementPage {
     const layout = document.createElement("div")
     layout.className = "main-layout"
 
-    // Sidebar
+    
     const sidebar = document.createElement("div")
     sidebar.className = "sidebar"
     const navigation = document.createElement("app-navigation")
     sidebar.appendChild(navigation)
 
-    // Main content
+    
     const content = document.createElement("div")
     content.className = "content"
 
@@ -67,7 +67,7 @@ class TeamManagementPage {
     layout.appendChild(content)
     app.appendChild(layout)
 
-    // Setup event listeners
+    
 
     const addMemberBtn = actions.querySelector('#add-member-btn')
     const backBtn = actions.querySelector('#back-btn')
@@ -80,10 +80,10 @@ class TeamManagementPage {
       }
     })
 
-    // Load team members
+    
     await this.loadTeamMembers()
     
-    // Make TeamManagementPage available globally
+    
     window.TeamManagementPage = this;
   }
 
@@ -171,7 +171,7 @@ class TeamManagementPage {
 
     container.appendChild(table)
 
-    // Add event listeners for action buttons
+    
     container.querySelectorAll("button[data-action]").forEach((btn) => {
       btn.addEventListener("click", (e) => {
         const action = e.target.getAttribute("data-action")
@@ -236,13 +236,13 @@ class TeamManagementPage {
     modal.appendChild(form)
     document.body.appendChild(modal)
     
-    // Focus the input field
+    
     const input = form.querySelector("#username-input");
     if (input) {
       input.focus();
     }
     
-    // Helper function to remove the modal
+    
     function removeModal() {
       const modal = document.getElementById("add-member-modal");
       if (modal && document.body.contains(modal)) {
@@ -250,7 +250,7 @@ class TeamManagementPage {
       }
     }
 
-    // Event listeners
+    
     const cancelBtn = form.querySelector("#cancel-btn");
     const submitBtn = form.querySelector("#add-member-submit-btn");
 
@@ -334,7 +334,7 @@ class TeamManagementPage {
     modal.appendChild(form)
     document.body.appendChild(modal)
     
-    // Helper function to remove the modal
+    
     function removeModal() {
       const modal = document.getElementById("change-role-modal");
       if (modal && document.body.contains(modal)) {
@@ -342,7 +342,7 @@ class TeamManagementPage {
       }
     }
 
-    // Event listeners
+    
     const cancelBtn = form.querySelector("#cancel-btn");
     const submitBtn = form.querySelector("#update-role-btn");
 
@@ -422,7 +422,7 @@ class TeamManagementPage {
     modal.appendChild(dialog)
     document.body.appendChild(modal)
     
-    // Helper function to remove modal
+    
     function removeModal() {
       const modal = document.getElementById("remove-member-modal");
       if (modal && document.body.contains(modal)) {
@@ -464,14 +464,14 @@ class TeamManagementPage {
       }
     });
     
-    // Focus the cancel button for safety
+    
     if (cancelBtn) {
       cancelBtn.focus();
     }
   }
 }
 
-// Make TeamManagementPage available globally for direct function calls
+
 window.TeamManagementPage = TeamManagementPage;
 
 export default TeamManagementPage

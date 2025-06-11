@@ -110,13 +110,13 @@ class TeamCard extends BaseComponent {
             </div>
         `
 
-    // Add action handlers
+    
     this.shadowRoot.querySelectorAll(".action-btn").forEach((btn) => {
       btn.addEventListener("click", (e) => {
         const action = e.target.getAttribute("data-action")
         this.emit("team-action", { action, teamId: this.team.id })
         
-        // Add direct global call for better reliability
+        
         if (window.TeamsPage) {
           try {
             window.TeamsPage.handleTeamAction(action, this.team.id);

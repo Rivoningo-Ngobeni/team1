@@ -6,7 +6,7 @@ import SecurityUtils from "../utils/security.js"
 import StateManager from "../utils/state.js"
 
 class DashboardPage {
-  static currentView = "list" // 'list' or 'kanban'
+  static currentView = "list" 
   static dragDropManager = null
   statuses = null
 
@@ -14,22 +14,22 @@ class DashboardPage {
     const app = document.getElementById("app")
     app.innerHTML = "";
 
-    // Main layout structure
+    
     const layout = document.createElement("div")
     layout.className = "app-layout"
 
-    // Sidebar navigation
+    
     const sidebar = document.createElement("aside")
     sidebar.setAttribute("role", "navigation")
     sidebar.setAttribute("aria-label", "Main navigation")
     const navigation = document.createElement("app-navigation")
     sidebar.appendChild(navigation)
 
-    // Main content area
+    
     const contentLayout = document.createElement("div")
     contentLayout.className = "content-layout"
 
-    // Header
+    
     const header = document.createElement("header")
     header.setAttribute("role", "banner")
     header.innerHTML = `
@@ -48,13 +48,13 @@ class DashboardPage {
             </div>
         `
 
-    // Main content
+    
     const main = document.createElement("main")
     main.id = "main-content"
     main.setAttribute("role", "main")
     main.setAttribute("aria-label", "Dashboard content")
 
-    // Stats section
+    
     const statsSection = document.createElement("section")
     statsSection.setAttribute("aria-labelledby", "stats-heading")
     statsSection.innerHTML = `
@@ -64,7 +64,7 @@ class DashboardPage {
             </div>
         `
 
-    // View controls section
+    
     const controlsSection = document.createElement("section")
     controlsSection.setAttribute("aria-labelledby", "controls-heading")
     controlsSection.innerHTML = `
@@ -99,7 +99,7 @@ class DashboardPage {
             </div>
         `
 
-    // Todos section
+    
     const todosSection = document.createElement("section")
     todosSection.setAttribute("aria-labelledby", "todos-heading")
     todosSection.innerHTML = `
@@ -125,22 +125,22 @@ class DashboardPage {
 
     app.appendChild(layout)
 
-    // Setup event listeners and load data
+    
     await this.setupDashboard()
   }
 
   static async setupDashboard() {
-    // Load teams for selector
+    
     await this.loadTeams()
 
-    // Load statuses
+    
     this.statuses = await this.loadStatues()
 
-    // Load initial data
+    
     await this.loadStats()
     await this.loadTodos()
 
-    // Setup event listeners
+    
     this.setupEventListeners()
   }
 
@@ -150,16 +150,16 @@ class DashboardPage {
             const statusFilter = document.getElementById("status-filter")
             const statuses = response._embedded.todoStatuses
 
-            // Clear existing options
+            
             statusFilter.innerHTML = "";
             
-            // Add default option
+            
             const defaultOption = document.createElement("option");
             defaultOption.value = "";
             defaultOption.textContent = "All";
             statusFilter.appendChild(defaultOption);
             
-            // Add status options
+            
             statuses.forEach((status) => {
               const option = document.createElement("option");
               option.value = status.id.toString();
@@ -179,16 +179,16 @@ class DashboardPage {
         const teamSelector = document.getElementById("team-selector")
         const teams = response._embedded.teams
 
-        // Clear existing options
+        
         teamSelector.innerHTML = "";
         
-        // Add default option
+        
         const defaultOption = document.createElement("option");
         defaultOption.value = "";
         defaultOption.textContent = "All Teams";
         teamSelector.appendChild(defaultOption);
         
-        // Add team options
+        
         teams.forEach((team) => {
           const option = document.createElement("option");
           option.value = team.id.toString();
@@ -196,7 +196,7 @@ class DashboardPage {
           teamSelector.appendChild(option);
         });
 
-        // Set current team if exists
+        
         const currentTeam = StateManager.getState().currentTeam
         if (currentTeam) {
           teamSelector.value = currentTeam
@@ -303,12 +303,12 @@ class DashboardPage {
       todoCard.setAttribute("role", "listitem")
       todoCard.setTodo(todo)
       
-      // Add event listener using multiple approaches for better reliability
+      
       todoCard.addEventListener("todo-action", (e) => {
         this.handleTodoAction(e.detail.action, e.detail.todoId);
       });
       
-      // Direct function property assignment as another approach
+      
       todoCard.onTodoAction = (action, todoId) => {
         this.handleTodoAction(action, todoId);
       };
@@ -316,7 +316,7 @@ class DashboardPage {
       todosList.appendChild(todoCard)
     })
     
-    // Add additional delegated event handler at the container level
+    
     todosList.addEventListener('todo-action', (e) => {
       if (e.detail && e.detail.action && e.detail.todoId) {
         this.handleTodoAction(e.detail.action, e.detail.todoId);
@@ -384,13 +384,13 @@ class DashboardPage {
           todoCard.setAttribute("aria-grabbed", "false")
           todoCard.setTodo(todo)
 
-          // Enhanced event handling with multiple approaches
+          
           todoCard.addEventListener("todo-action", (e) => {
             e.stopPropagation();
             this.handleTodoAction(e.detail.action, e.detail.todoId);
           });
           
-          // Direct property assignment for redundancy
+          
           todoCard.onTodoAction = (action, todoId) => {
             this.handleTodoAction(action, todoId);
           };
@@ -410,7 +410,7 @@ class DashboardPage {
           dropZone.appendChild(todoCard)
         })
         
-        // Add delegated event handler to the drop zone
+        
         dropZone.addEventListener('todo-action', (e) => {
           if (e.detail && e.detail.action && e.detail.todoId) {
             e.stopPropagation();
@@ -427,7 +427,7 @@ class DashboardPage {
 
     container.appendChild(board)
 
-    // Initialize drag and drop manager
+    
     if (this.dragDropManager) {
       this.dragDropManager.destroy()
     }
@@ -435,7 +435,7 @@ class DashboardPage {
     this.dragDropManager = new DragDropManager()
     this.dragDropManager.init(board)
 
-    // Listen for status changes from drag and drop
+    
     board.addEventListener("todo-status-change", async (e) => {
       const { todoId, fromStatus, toStatus } = e.detail
       if(this.statuses){
@@ -447,7 +447,7 @@ class DashboardPage {
   }
 
   static setupEventListeners() {
-    // View toggle buttons
+    
     const listViewBtn = document.getElementById("list-view-btn")
     const kanbanViewBtn = document.getElementById("kanban-view-btn")
 
@@ -474,7 +474,7 @@ class DashboardPage {
       this.renderTodos(this.allTodos || [])
     })
 
-    // Team selector
+    
     const teamSelector = document.getElementById("team-selector")
     if (teamSelector) {
       teamSelector.addEventListener("change", (e) => {
@@ -484,7 +484,7 @@ class DashboardPage {
       })
     }
 
-    // Status filter
+    
     const statusFilter = document.getElementById("status-filter")
     if (statusFilter) {
       statusFilter.addEventListener("change", (e) => {
@@ -492,7 +492,7 @@ class DashboardPage {
       })
     }
 
-    // Search input
+    
     const searchInput = document.getElementById("search-input")
     if (searchInput) {
       searchInput.addEventListener("input", (e) => {
@@ -500,7 +500,7 @@ class DashboardPage {
       })
     }
 
-    // Create todo button - Enhanced debugging
+    
     const createTodoBtn = document.getElementById("create-todo-btn")
     
     if (!createTodoBtn) {
@@ -521,7 +521,7 @@ class DashboardPage {
     const statusFilter = document.getElementById("status-filter")
     const searchInput = document.getElementById("search-input")
 
-    // Get values directly from standard select elements
+    
     const selectedTeam = teamSelector ? teamSelector.value : '';
     const selectedStatus = statusFilter ? statusFilter.value : '';
     const searchTerm = searchInput && searchInput.value ? searchInput.value.toLowerCase() : '';
@@ -558,7 +558,7 @@ class DashboardPage {
       const response = await ApiService.patch(`/todos/${todoId}`, {
         status: 'api/todoStatuses/' + newStatus.id,
       })
-        // Update local data
+        
         const todoIndex = this.allTodos.findIndex((t) => t.id === todoId)
         if (todoIndex !== -1) {
           this.allTodos[todoIndex].status.name = newStatus.name
@@ -567,11 +567,11 @@ class DashboardPage {
         ToastService.show("Task status updated", "success")
         await this.loadStats()
 
-        // Re-render current view
+        
         this.renderTodos(this.allTodos)
     } catch (error) {
       ToastService.show("Failed to update task status", "error")
-      // Revert the UI change
+      
       this.renderTodos(this.allTodos)
     }
   }
@@ -650,7 +650,7 @@ class DashboardPage {
       }
     }
     
-    // Get direct DOM references to standard buttons instead of using custom components
+    
     const cancelBtn = modal.querySelector("#cancel-delete-btn");
     const deleteBtn = modal.querySelector("#confirm-delete-btn");
 
@@ -667,10 +667,10 @@ class DashboardPage {
 
         try {
           const response = await ApiService.delete(`/todos/${todoId}`);
-            // Always remove the modal first
+            
             removeModal();
             
-            // Then show confirmation and reload data
+            
             ToastService.show("Task deleted successfully", "success");
             await this.loadTodos();
             await this.loadStats();
@@ -682,12 +682,12 @@ class DashboardPage {
     } else {
     }
 
-    // Focus management
+    
     if (deleteBtn) {
       deleteBtn.focus();
     }
 
-    // Add additional close methods
+    
     overlay.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         removeModal();
@@ -718,7 +718,7 @@ class DashboardPage {
   }
 }
 
-// Make it globally available for inline event handlers
+
 window.DashboardPage = DashboardPage
 
 export default DashboardPage

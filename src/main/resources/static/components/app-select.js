@@ -1,5 +1,5 @@
-import BaseComponent from "./base-component.js"
 import SecurityUtils from "../utils/security.js";
+import BaseComponent from "./base-component.js";
 
 class AppSelect extends BaseComponent {
   static get observedAttributes() {
@@ -17,7 +17,7 @@ class AppSelect extends BaseComponent {
     this.render()
     this.setupEventListeners()
 
-    // Initialize options from nested option elements (if any)
+    
     const slotOptions = Array.from(this.querySelectorAll("option"))
     if (slotOptions.length > 0) {
       this.options = slotOptions.map((option) => ({
@@ -119,13 +119,13 @@ class AppSelect extends BaseComponent {
 renderOptions() {
   let optionsHtml = ""
 
-  // Add placeholder option if not multiple and we have a placeholder
+  
   if (!this.hasAttribute("multiple") && this.getAttribute("placeholder")) {
     const placeholder = this.getAttribute("placeholder") || "Select..."
     optionsHtml += `<option value="" ${!this._value ? "selected" : ""} disabled>${SecurityUtils.sanitizeText(placeholder)}</option>`
   }
 
-  // Add options from this.options
+  
   if (this.options && this.options.length > 0) {
     this.options.forEach((option) => {
       const selected = Array.isArray(this._value)
@@ -152,7 +152,7 @@ renderOptions() {
   }
 
   handleInput(event) {
-    // Update value
+    
     const select = this.$(".select")
     if (select) {
       if (this.hasAttribute("multiple")) {
@@ -162,12 +162,12 @@ renderOptions() {
       }
     }
     
-    // Emit input event
+    
     this.emit("input", { value: this._value })
   }
 
   handleChange(event) {
-    // Update value
+    
     const select = this.$(".select")
     if (select) {
       if (this.hasAttribute("multiple")) {
@@ -177,22 +177,22 @@ renderOptions() {
       }
     }
     
-    // Emit change event with value
+    
     this.emit("change", { value: this._value })
     
-    // Log the change for debugging
     
-    // Validate
+    
+    
     this.validate()
     
-    // Bubble the event if needed
+    
     if (typeof this.onValueChange === 'function') {
       this.onValueChange(this._value);
     }
   }
 
   onPropsChange(name, oldValue, newValue) {
-    // React to attribute changes
+    
     if (["disabled", "required", "multiple", "placeholder"].includes(name)) {
       this.render()
     }
@@ -219,10 +219,10 @@ renderOptions() {
       }
     })
 
-    // Re-render with new options
+    
     this.render()
     
-    // Restore selected value after re-rendering
+    
     const select = this.$(".select")
     if (select && this._value) {
       if (this.hasAttribute("multiple")) {
@@ -259,14 +259,14 @@ renderOptions() {
         select.value = this._value;
       }
       
-      // Emit change event when value is set programmatically
+      
       this.emit("change", { value: this._value });
       
-      // Trigger native change event for better compatibility
+      
       const changeEvent = new Event("change", { bubbles: true });
       select.dispatchEvent(changeEvent);
       
-      // Log for debugging
+      
     }
   }
 

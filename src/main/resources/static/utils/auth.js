@@ -15,18 +15,18 @@ class AuthService {
   }
 
   init() {
-    // Load existing session
+    
     this.loadSession()
 
-    // Setup session monitoring
+    
     this.startSessionMonitoring()
 
-    // Setup CSRF protection
+    
     this.setupCSRFProtection()
   }
 
   async login(username, password, totpCode) {
-    // Validate inputs
+    
     if (!SecurityUtils.validateUsername(username)) {
       return { success: false, message: "Invalid username format" }
     }
@@ -35,7 +35,7 @@ class AuthService {
       return { success: false, message: "Password must be at least 8 characters" }
     }
 
-    // Make login request
+    
     const response = await ApiService.login(username, password, totpCode)
 
     this.setSession(response.user, response.token, response.refreshToken)
@@ -51,7 +51,7 @@ class AuthService {
   }
 
   async register(username, password) {
-    // Validate inputs
+    
     if (!SecurityUtils.validateUsername(username)) {
       throw new Error("Username must be 3-50 characters, letters, numbers, and underscores only")
     }
@@ -80,19 +80,19 @@ class AuthService {
     this.authToken = token
     this.refreshToken = refreshToken
 
-    // Store in secure storage
+    
     StorageService.setSecure("current_user", user)
     StorageService.setSecure("auth_token", token)
     if (refreshToken) {
       StorageService.setSecure("refresh_token", refreshToken)
     }
 
-    // Setup token refresh if refresh token is available
+    
     if (refreshToken) {
       this.scheduleTokenRefresh()
     }
 
-    // Update CSRF token
+    
     this.updateCSRFToken()
   }
 
@@ -108,7 +108,7 @@ class AuthService {
   }
 
   logout() {
-    // Clear timers
+    
     if (this.tokenRefreshTimer) {
       clearTimeout(this.tokenRefreshTimer)
     }
@@ -116,19 +116,19 @@ class AuthService {
       clearInterval(this.sessionCheckInterval)
     }
 
-    // Clear session data
+    
     this.currentUser = null
     this.authToken = null
     this.refreshToken = null
 
-    // Clear storage
+    
     StorageService.remove("current_user")
     StorageService.remove("auth_token")
     StorageService.remove("refresh_token")
     StorageService.remove("temp_auth")
     StorageService.remove("csrf_token")
 
-    // Clear any cached data
+    
     const keys = Object.keys(localStorage).concat(Object.keys(sessionStorage))
     keys.forEach((key) => {
       if (key.includes("cache_")) {
@@ -182,8 +182,8 @@ class AuthService {
   }
 
   scheduleTokenRefresh() {
-    // Refresh token 5 minutes before expiry (assuming 1 hour tokens)
-    const refreshTime = 55 * 60 * 1000 // 55 minutes
+    
+    const refreshTime = 55 * 60 * 1000 
 
     if (this.tokenRefreshTimer) {
       clearTimeout(this.tokenRefreshTimer)
@@ -195,7 +195,7 @@ class AuthService {
   }
 
   startSessionMonitoring() {
-    // Check session validity every 5 minutes
+    
     this.sessionCheckInterval = setInterval(
       () => {
         if (this.isAuthenticated()) {
@@ -230,7 +230,7 @@ class AuthService {
     return SecurityUtils.getCSRFToken()
   }
 
-  // Password strength checker
+  
   checkPasswordStrength(password) {
     const checks = {
       length: password.length >= 8,
@@ -265,6 +265,6 @@ class AuthService {
   }
 }
 
-// Create singleton instance
+
 const authService = new AuthService()
 export default authService

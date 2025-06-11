@@ -91,13 +91,13 @@ class AppCard extends BaseComponent {
           padding: 2rem;
         }
 
-        /* Focus styles for clickable cards */
+        
         .card--clickable:focus {
           outline: 2px solid var(--primary-color, #2563eb);
           outline-offset: 2px;
         }
 
-        /* Accessibility */
+        
         .card--clickable[role="button"] {
           user-select: none;
         }
@@ -149,7 +149,7 @@ class AppCard extends BaseComponent {
     }
   }
 
-  // Getters and setters
+  
   get variant() {
     return this.getAttribute("variant") || "default"
   }
