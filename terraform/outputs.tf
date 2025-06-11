@@ -1,8 +1,3 @@
-output "ec2_endpoint" {
-  value = aws_instance.team_one_instance.public_dns
-  description = "Public DNS of the EC2 instance (not necessary since we use ALB)"
-}
-
 output "db_endpoint" {
   value = aws_db_instance.team_one_db_instance.endpoint
 }
