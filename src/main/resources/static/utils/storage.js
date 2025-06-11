@@ -16,7 +16,6 @@ class StorageService {
       }
       return true
     } catch (error) {
-      console.error("Storage error:", error)
       return false
     }
   }
@@ -36,7 +35,6 @@ class StorageService {
 
       return JSON.parse(data)
     } catch (error) {
-      console.error("Retrieval error:", error)
       return null
     }
   }

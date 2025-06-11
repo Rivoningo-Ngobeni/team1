@@ -42,7 +42,6 @@ export default class BaseComponent extends HTMLElement {
   addEventListener(element, event, handler, options = {}) {
     // Exit early if either element or event is invalid
     if (!element || !event || typeof event !== 'string') {
-      console.warn('Invalid parameters for addEventListener:', { element, event });
       return;
     }
 
@@ -50,7 +49,6 @@ export default class BaseComponent extends HTMLElement {
       try {
         handler.call(this, e);
       } catch (error) {
-        console.error("Event handler error:", error);
         this.handleError(error);
       }
     };
@@ -70,10 +68,8 @@ export default class BaseComponent extends HTMLElement {
           options,
         });
       } else {
-        console.warn('Invalid element for addEventListener:', element);
       }
     } catch (e) {
-      console.error("Error adding event listener:", e);
     }
   }
 
@@ -84,11 +80,8 @@ export default class BaseComponent extends HTMLElement {
       // Check if element is a valid DOM element with removeEventListener method
       if (element && typeof element.removeEventListener === 'function') {
         element.removeEventListener(event, handler)
-      } else {
-        console.warn('Invalid element for removeEventListener:', element)
       }
     } catch (e) {
-      console.error("Error removing event listener:", e)
     }
 
     // Remove from tracking
@@ -110,7 +103,6 @@ export default class BaseComponent extends HTMLElement {
             element.removeEventListener(event, handler, options)
           }
         } catch (e) {
-          console.error("Error removing event listener during cleanup:", e)
         }
       })
     })
@@ -181,7 +173,6 @@ export default class BaseComponent extends HTMLElement {
 
   // Error handling
   handleError(error) {
-    console.error(`Error in ${this.constructor.name}:`, error)
     this.emit("error", { error, component: this })
   }
 

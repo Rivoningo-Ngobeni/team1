@@ -59,13 +59,11 @@ class App {
 
       // Global error handling
       window.addEventListener("error", (e) => {
-        console.error("Global error:", e.error)
         ToastService.show("An unexpected error occurred", "error")
       })
 
       // Global unhandled promise rejection handling
       window.addEventListener("unhandledrejection", (e) => {
-        console.error("Unhandled promise rejection:", e.reason)
         ToastService.show("An unexpected error occurred", "error")
       })
 
@@ -78,7 +76,6 @@ class App {
       // Setup session monitoring
       this.setupSessionMonitoring()
     } catch (error) {
-      console.error("App initialization failed:", error)
       ToastService.show("Failed to initialize application", "error")
     }
   }

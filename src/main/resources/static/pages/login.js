@@ -118,7 +118,6 @@ class LoginPage {
 
         Router.navigate("/two-factor", { username: username, password: password })
       } catch (error) {
-        console.error("Login error:", error)
         ToastService.show("An error occurred during login", "error")
         if (submitButton) {
           submitButton.textContent = "Sign In"

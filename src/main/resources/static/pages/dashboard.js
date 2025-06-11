@@ -147,7 +147,6 @@ class DashboardPage {
   static async loadStatues(){
     try {
           const response = await ApiService.get("/todoStatuses")
-          console.log(response)
             const statusFilter = document.getElementById("status-filter")
             const statuses = response._embedded.todoStatuses
 
@@ -170,7 +169,6 @@ class DashboardPage {
 
             return statuses
         } catch (error) {
-        console.log(error)
           ToastService.show("Failed to load statuses", "error")
         }
   }
@@ -204,7 +202,6 @@ class DashboardPage {
           teamSelector.value = currentTeam
         }
     } catch (error) {
-    console.log(error)
       ToastService.show("Failed to load teams", "error")
     }
   }
@@ -308,13 +305,11 @@ class DashboardPage {
       
       // Add event listener using multiple approaches for better reliability
       todoCard.addEventListener("todo-action", (e) => {
-        console.log('Todo action event received in dashboard:', e.detail);
         this.handleTodoAction(e.detail.action, e.detail.todoId);
       });
       
       // Direct function property assignment as another approach
       todoCard.onTodoAction = (action, todoId) => {
-        console.log('Direct todo action called:', action, todoId);
         this.handleTodoAction(action, todoId);
       };
 
@@ -324,7 +319,6 @@ class DashboardPage {
     // Add additional delegated event handler at the container level
     todosList.addEventListener('todo-action', (e) => {
       if (e.detail && e.detail.action && e.detail.todoId) {
-        console.log('Delegated todo action event received:', e.detail);
         this.handleTodoAction(e.detail.action, e.detail.todoId);
       }
     });
@@ -392,14 +386,12 @@ class DashboardPage {
 
           // Enhanced event handling with multiple approaches
           todoCard.addEventListener("todo-action", (e) => {
-            console.log('Kanban todo-action received:', e.detail);
             e.stopPropagation();
             this.handleTodoAction(e.detail.action, e.detail.todoId);
           });
           
           // Direct property assignment for redundancy
           todoCard.onTodoAction = (action, todoId) => {
-            console.log('Direct kanban todo action called:', action, todoId);
             this.handleTodoAction(action, todoId);
           };
 
@@ -421,7 +413,6 @@ class DashboardPage {
         // Add delegated event handler to the drop zone
         dropZone.addEventListener('todo-action', (e) => {
           if (e.detail && e.detail.action && e.detail.todoId) {
-            console.log('Delegated kanban todo-action received:', e.detail);
             e.stopPropagation();
             this.handleTodoAction(e.detail.action, e.detail.todoId);
           }
@@ -488,7 +479,6 @@ class DashboardPage {
     if (teamSelector) {
       teamSelector.addEventListener("change", (e) => {
         const selectedTeam = e.target.value;
-        console.log('Team selector changed:', selectedTeam);
         StateManager.setState({ currentTeam: selectedTeam })
         this.filterTodos()
       })
@@ -498,7 +488,6 @@ class DashboardPage {
     const statusFilter = document.getElementById("status-filter")
     if (statusFilter) {
       statusFilter.addEventListener("change", (e) => {
-        console.log('Status filter changed:', e.target.value);
         this.filterTodos()
       })
     }
@@ -512,23 +501,19 @@ class DashboardPage {
     }
 
     // Create todo button - Enhanced debugging
-    console.log("Setting up Create Todo button event listener");
     const createTodoBtn = document.getElementById("create-todo-btn")
     
     if (!createTodoBtn) {
-      console.error("Create Todo button not found in DOM")
       return
     }
     
     createTodoBtn.onclick = (e) => {
-      console.log("Create Todo button clicked via onclick property")
       this.showCreateTodoForm()
     }
   }
 
   static filterTodos() {
     if (!this.allTodos) {
-      console.log('No todos to filter');
       return;
     }
 
@@ -540,14 +525,7 @@ class DashboardPage {
     const selectedTeam = teamSelector ? teamSelector.value : '';
     const selectedStatus = statusFilter ? statusFilter.value : '';
     const searchTerm = searchInput && searchInput.value ? searchInput.value.toLowerCase() : '';
-    
-    console.log('Filtering todos with:', { 
-      selectedTeam, 
-      selectedStatus,
-      searchTerm,
-      totalTodos: this.allTodos.length
-    });
-
+  
     let filtered = this.allTodos;
 
     if (selectedTeam) {
@@ -555,7 +533,6 @@ class DashboardPage {
         const result = todo.team && todo.team.id && todo.team.id.toString() === selectedTeam;
         return result;
       });
-      console.log(`After team filter: ${filtered.length} todos`);
     }
 
     if (selectedStatus) {
@@ -563,7 +540,6 @@ class DashboardPage {
         const result = todo.status && todo.status.id && todo.status.id.toString() === selectedStatus;
         return result; 
       });
-      console.log(`After status filter: ${filtered.length} todos`);
     }
 
     if (searchTerm) {
@@ -572,7 +548,6 @@ class DashboardPage {
         const descMatch = todo.description && todo.description.toLowerCase().includes(searchTerm);
         return titleMatch || descMatch;
       });
-      console.log(`After search filter: ${filtered.length} todos`);
     }
 
     this.renderTodos(filtered)
@@ -602,28 +577,23 @@ class DashboardPage {
   }
 
   static async handleTodoAction(action, todoId) {
-    console.log(`Handling todo action: ${action} for todo ${todoId}`);
     
     if (!action || !todoId) {
-      console.error('Invalid action or todoId:', { action, todoId });
       return;
     }
     
     switch (action) {
       case "edit":
-        console.log(`Navigating to edit todo: ${todoId}`);
         this.showEditTodoForm(todoId);
         break;
       case "delete":
-        console.log(`Showing delete confirmation for todo: ${todoId}`);
         this.showDeleteTodoConfirm(todoId);
         break;
       case "toggle-status":
-        console.log(`Toggling status for todo: ${todoId}`);
         await this.toggleTodoStatus(todoId);
         break;
       default:
-        console.warn(`Unknown action: ${action}`);
+        return;
     }
   }
 
@@ -636,11 +606,9 @@ class DashboardPage {
   }
 
   static showDeleteTodoConfirm(todoId) {
-    console.log(`Showing delete confirmation for todo ID: ${todoId}`);
     
     const todo = this.allTodos.find((t) => t.id === todoId);
     if (!todo) {
-      console.error(`Todo with ID ${todoId} not found`);
       return;
     }
 
@@ -688,19 +656,16 @@ class DashboardPage {
 
     if (cancelBtn) {
       cancelBtn.addEventListener("click", () => {
-        console.log("Cancel delete clicked");
         removeModal();
       });
     }
 
     if (deleteBtn) {
       deleteBtn.addEventListener("click", async () => {
-        console.log("Confirm delete clicked");
         deleteBtn.textContent = "Deleting...";
         deleteBtn.disabled = true;
 
         try {
-          console.log(`Sending delete request for todo ${todoId}`);
           const response = await ApiService.delete(`/todos/${todoId}`);
             // Always remove the modal first
             removeModal();
@@ -710,13 +675,11 @@ class DashboardPage {
             await this.loadTodos();
             await this.loadStats();
         } catch (error) {
-          console.error("Error deleting todo:", error);
           ToastService.show("Failed to delete task", "error");
           removeModal();
         }
       });
     } else {
-      console.error("Delete button not found in modal");
     }
 
     // Focus management

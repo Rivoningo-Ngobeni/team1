@@ -228,7 +228,6 @@ class AppButton extends BaseComponent {
               try {
                 form.submit()
               } catch (submitErr) {
-                console.error("Form submission error:", submitErr)
               }
             }
           }

@@ -460,7 +460,6 @@ class TodoCard extends BaseComponent {
     const actionButtons = this.shadowRoot.querySelectorAll(".action-btn");
     
     if (!actionButtons || actionButtons.length === 0) {
-      console.error('Action buttons not found in todo-card');
       return;
     }
     
@@ -477,7 +476,6 @@ class TodoCard extends BaseComponent {
         e.preventDefault();
         e.stopPropagation(); // Prevent drag events
         
-        console.log(`Todo action button clicked: ${action}`);
         
         // Use only one approach - the most reliable one - direct global call
         if (window.DashboardPage) {

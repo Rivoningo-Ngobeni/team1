@@ -181,7 +181,6 @@ renderOptions() {
     this.emit("change", { value: this._value })
     
     // Log the change for debugging
-    console.log(`AppSelect value changed to: ${JSON.stringify(this._value)}`);
     
     // Validate
     this.validate()
@@ -206,7 +205,6 @@ renderOptions() {
 
   setOptions(options) {
     if (!Array.isArray(options)) {
-      console.error("setOptions expects an array");
       return;
     }
     
@@ -236,7 +234,6 @@ renderOptions() {
       }
     }
     
-    console.log(`AppSelect options set: ${options.length} options available`);
   }
 
   $(selector) {
@@ -270,7 +267,6 @@ renderOptions() {
       select.dispatchEvent(changeEvent);
       
       // Log for debugging
-      console.log(`AppSelect value set to ${this._value}`);
     }
   }
 
@@ -331,7 +327,6 @@ renderOptions() {
       }
     }
     
-    console.log(`AppSelect value set to: ${val}`);
   }
 
   get disabled() {
