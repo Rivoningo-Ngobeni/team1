@@ -79,25 +79,27 @@ public class SecurityConfig {
                                 "/utils/config",
                                 "/favicon.ico"
                         ).permitAll()
+                        .requestMatchers(  "/**/*.woff2", "/**/*.woff", "/**/*.ttf", "/**/*.eot").permitAll()
                         .requestMatchers("/api/config/public", "/api/config/public/**").permitAll()
                         .requestMatchers("/api/config", "/api/config/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider());
                 http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                        .headers(headers -> headers
-                        .contentSecurityPolicy(csp -> csp
-                                .policyDirectives("default-src 'self'; " +
-                                        "script-src 'self'; " +
-                                        "style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; " +
-                                        "font-src 'self' https://fonts.gstatic.com; " +
-                                        "img-src 'self' https://cdn.example.com data:; " +
-                                        "connect-src 'self'; " +
-                                        "object-src 'none'; " +
-                                        "base-uri 'self'; " +
-                                        "frame-ancestors 'none'")
-                        )
-                );
+                //         .headers(headers -> headers
+                //         .contentSecurityPolicy(csp -> csp
+                //                 .policyDirectives("default-src 'self'; " +
+                //                         "script-src 'self'; " +
+                //                         "style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; " +
+                //                         "font-src 'self' https://fonts.gstatic.com; " +
+                //                         "img-src 'self' https://cdn.example.com data:; " +
+                //                         "connect-src 'self'; " +
+                //                         "object-src 'none'; " +
+                //                         "base-uri 'self'; " +
+                //                         "frame-ancestors 'none'")
+                //         )
+                // )
+                ;
 
 
 
