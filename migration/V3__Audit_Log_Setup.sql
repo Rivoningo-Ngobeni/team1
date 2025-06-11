@@ -6,7 +6,7 @@ INSERT INTO audit_log_action_types (name) VALUES
     ('UPDATE'),
     ('DELETE')
 ON CONFLICT (name) DO NOTHING;
-GO;
+
 
 -- Create the audit trigger function
 CREATE OR REPLACE FUNCTION audit_trigger_function()
@@ -82,62 +82,62 @@ BEGIN
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
-GO;
+
 
 
 -- Users table
 CREATE TRIGGER audit_users_trigger
     AFTER INSERT OR UPDATE OR DELETE ON users
     FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
-GO;
+
 
 -- System roles table
 CREATE TRIGGER audit_system_roles_trigger
     AFTER INSERT OR UPDATE OR DELETE ON system_roles
     FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
-GO;
+
 
 -- User system roles table
 CREATE TRIGGER audit_user_system_roles_trigger
     AFTER INSERT OR UPDATE OR DELETE ON user_system_roles
     FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
-GO;
+
 
 -- Teams table
 CREATE TRIGGER audit_teams_trigger
     AFTER INSERT OR UPDATE OR DELETE ON teams
     FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
-GO;
+
 
 -- Team roles table
 CREATE TRIGGER audit_team_roles_trigger
     AFTER INSERT OR UPDATE OR DELETE ON team_roles
     FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
-GO;
+
 
 -- Team members table
 CREATE TRIGGER audit_team_members_trigger
     AFTER INSERT OR UPDATE OR DELETE ON team_members
     FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
-GO;
+
 
 -- Todo status table
 CREATE TRIGGER audit_todo_status_trigger
     AFTER INSERT OR UPDATE OR DELETE ON todo_status
     FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
-GO;
+
 
 -- Todos table
 CREATE TRIGGER audit_todos_trigger
     AFTER INSERT OR UPDATE OR DELETE ON todos
     FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
-GO;
+
 
 -- Audit log action types table
 CREATE TRIGGER audit_audit_log_action_types_trigger
     AFTER INSERT OR UPDATE OR DELETE ON audit_log_action_types
     FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
-GO;
+
 
 -- Helper function to set current user context
 CREATE OR REPLACE FUNCTION set_current_user_id(user_id BIGINT)
@@ -146,7 +146,7 @@ BEGIN
     PERFORM set_config('app.current_user_id', user_id::TEXT, false);
 END;
 $$ LANGUAGE plpgsql;
-GO;
+
 
 -- Helper function to clear current user context
 CREATE OR REPLACE FUNCTION clear_current_user_id()
@@ -155,4 +155,3 @@ BEGIN
     PERFORM set_config('app.current_user_id', '', false);
 END;
 $$ LANGUAGE plpgsql;
-GO;
