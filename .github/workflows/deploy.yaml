@@ -84,10 +84,26 @@ jobs:
             sudo systemctl enable $SERVICE_NAME
             sudo systemctl restart $SERVICE_NAME
             
-            echo "--- Installing and configuring NGINX ---"
+            echo "--- Installing and configuring NGINX and Certbot ---"
             if ! command -v nginx &> /dev/null; then
-            sudo yum install -y nginx
-            sudo systemctl enable nginx
+              sudo yum install -y nginx
+              sudo systemctl enable nginx
+            fi
+            
+            if ! command -v certbot &> /dev/null; then
+              echo "--- Installing Certbot ---"
+              sudo yum install -y epel-release
+              sudo yum install -y certbot python3-certbot-nginx
+            fi
+            
+            echo "--- Obtaining SSL certificate with Certbot ---"
+            if [ ! -d "/etc/letsencrypt/live/${{ vars.EC2_HOST }}" ]; then
+              sudo certbot --nginx -d ${{ vars.EC2_HOST }} --non-interactive --agree-tos --email admin@${{ vars.EC2_HOST }} || {
+                echo "Error: Certbot failed to obtain certificate."
+                exit 1
+              }
+            else
+              echo "SSL certificate already exists for ${{ vars.EC2_HOST }}"
             fi
             
             echo "Configuring 'server_names_hash_bucket_size'..."
@@ -100,22 +116,42 @@ jobs:
             NGINX_CONF="/etc/nginx/conf.d/team_one.conf"
             echo "Creating Nginx config file: $NGINX_CONF"
             sudo bash -c "cat > $NGINX_CONF" <<EOF
+            # HTTP server block (redirects to HTTPS)
             server {
-              listen 80;
-              listen [::]:80;
-              server_name ${{ vars.EC2_HOST }};
+                listen 80;
+                listen [::]:80;
+                server_name ${{ vars.EC2_HOST }};
             
-              location / {
-              proxy_pass http://localhost:8080;
-              proxy_http_version 1.1;
-              proxy_set_header Upgrade \$http_upgrade;
-              proxy_set_header Connection 'upgrade';
-              proxy_set_header Host \$host;
-              proxy_cache_bypass \$http_upgrade;
-              proxy_set_header X-Real-IP \$remote_addr;
-              proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-              proxy_set_header X-Forwarded-Proto \$scheme;
-              }
+                # Redirect all HTTP traffic to HTTPS
+                return 301 https://\$host\$request_uri;
+            }
+            
+            # HTTPS server block
+            server {
+                listen 443 ssl;
+                listen [::]:443 ssl;
+                server_name ${{ vars.EC2_HOST }};
+            
+                # SSL certificate paths
+                ssl_certificate /etc/letsencrypt/live/${{ vars.EC2_HOST }}/fullchain.pem;
+                ssl_certificate_key /etc/letsencrypt/live/${{ vars.EC2_HOST }}/privkey.pem;
+            
+                # SSL security settings
+                ssl_protocols TLSv1.2 TLSv1.3;
+                ssl_prefer_server_ciphers on;
+                ssl_ciphers EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH;
+            
+                location / {
+                    proxy_pass http://localhost:8080;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade \$http_upgrade;
+                    proxy_set_header Connection 'upgrade';
+                    proxy_set_header Host \$host;
+                    proxy_cache_bypass \$http_upgrade;
+                    proxy_set_header X-Real-IP \$remote_addr;
+                    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto \$scheme;
+                }
             }
             EOF
             
