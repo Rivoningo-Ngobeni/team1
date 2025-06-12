@@ -51,6 +51,15 @@ class SignupPage {
                 <div id="password-help" class="form-help">At least 8 characters</div>
                 <div id="password-error" class="form-error" role="alert" aria-live="polite"></div>
             </div>
+            <div id="password-requirements" class="password-requirements">
+                <ul>
+                    <li>At least 8 characters</li>
+                    <li>At least one uppercase letter</li>
+                    <li>At least one lowercase letter</li>
+                    <li>At least one number</li>
+                    <li>At least one special character (@$!%*?&)</li>
+                </ul>
+            </div>
             <div class="form-group">
                 <label for="confirm-password" class="form-label">Confirm Password</label>
                 <input

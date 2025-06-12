@@ -1658,3 +1658,22 @@ select:disabled {
   cursor: not-allowed;
 }
 
+.password-requirements {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin-block: var(--spacing-xs);
+  
+}
+
+.password-requirements ul {
+  list-style: none;
+  padding: 0;
+}
+
+.password-requirements li {
+  margin-bottom: var(--spacing-xs);
+}
+
+.password-requirements li::before {
+  content: '•';
+}
